@@ -14,7 +14,7 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-x-6 lg:justify-start">
             <a
-              href="#"
+              href="/rooms"
               className="w-full sm:w-auto bg-black dark:bg-white px-3.5 py-2.5 text-sm font-semibold text-white dark:text-black hover:bg-gray-800 dark:hover:bg-gray-200 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black dark:focus-visible:outline-white rounded-md transition-colors"
             >
               Get started
