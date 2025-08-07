@@ -17,53 +17,20 @@ import {
     UserButton,
 } from '@clerk/nextjs'
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden"
 import * as React from "react"
 import Link from "next/link"
 import { ModeToggle } from '@/components/mode-toggle'
-
-
-
-const components: { title: string; href: string; description: string }[] = [
-    {
-        title: "Alert Dialog",
-        href: "/docs/primitives/alert-dialog",
-        description:
-            "A modal dialog that interrupts the user with important content and expects a response.",
-    },
-    {
-        title: "Hover Card",
-        href: "/docs/primitives/hover-card",
-        description:
-            "For sighted users to preview content available behind a link.",
-    },
-    {
-        title: "Progress",
-        href: "/docs/primitives/progress",
-        description:
-            "Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.",
-    },
-    {
-        title: "Scroll-area",
-        href: "/docs/primitives/scroll-area",
-        description: "Visually or semantically separates content.",
-    },
-    {
-        title: "Tabs",
-        href: "/docs/primitives/tabs",
-        description:
-            "A set of layered sections of content—known as tab panels—that are displayed one at a time.",
-    },
-    {
-        title: "Tooltip",
-        href: "/docs/primitives/tooltip",
-        description:
-            "A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.",
-    },
-]
+import { Menu } from 'lucide-react'
 
 export function Navbar() {
+    const [isOpen, setIsOpen] = React.useState(false)
+
+    const closeSheet = () => setIsOpen(false)
+
     return (
-        <div className="w-full flex items-center justify-between px-4 py-2">
+        <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 h-16 bg-white/80 dark:bg-background/80 backdrop-blur-md border-b border-border transition-all duration-100">
             <div className="flex items-center space-x-2 sm:space-x-3">
                 <div className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 rounded-xl flex items-center justify-center shadow-lg">
                     <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white dark:text-gray-900" fill="currentColor" viewBox="0 0 24 24">
@@ -72,64 +39,144 @@ export function Navbar() {
                 </div>
                 <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">FindYourMeet</span>
             </div>
-            <NavigationMenu viewport={false} className="flex-1 flex justify-center">
-                <NavigationMenuList>
-                    <NavigationMenuItem>
-                        <NavigationMenuTrigger>Home</NavigationMenuTrigger>
-                        <NavigationMenuContent>
-                            <ul className="grid gap-2 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
-                                <li className="row-span-3">
-                                    <NavigationMenuLink asChild>
-                                        <a
-                                            className="from-muted/50 to-muted flex h-full w-full flex-col justify-end rounded-md bg-linear-to-b p-6 no-underline outline-hidden select-none focus:shadow-md"
-                                            href="/"
-                                        >
-                                            <div className="mt-4 mb-2 text-lg font-medium">
-                                                shadcn/ui
-                                            </div>
-                                            <p className="text-muted-foreground text-sm leading-tight">
-                                                Beautifully designed components built with Tailwind CSS.
-                                            </p>
-                                        </a>
-                                    </NavigationMenuLink>
-                                </li>
-                                <ListItem href="/docs" title="Introduction">
-                                    Re-usable components built using Radix UI and Tailwind CSS.
-                                </ListItem>
-                                <ListItem href="/docs/installation" title="Installation">
-                                    How to install dependencies and structure your app.
-                                </ListItem>
-                                <ListItem href="/docs/primitives/typography" title="Typography">
-                                    Styles for headings, paragraphs, lists...etc
-                                </ListItem>
-                            </ul>
-                        </NavigationMenuContent>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                            <Link href="/docs">About</Link>
-                        </NavigationMenuLink>
-                    </NavigationMenuItem>
-                    <NavigationMenuItem>
-                        <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                            <Link href="/docs">Pricing</Link>
-                        </NavigationMenuLink>
-                    </NavigationMenuItem>
-                </NavigationMenuList>
-            </NavigationMenu>
-            <div className="flex items-center space-x-2">
+
+            <div className="hidden lg:block">
+                <NavigationMenu>
+                    <NavigationMenuList>
+                        <NavigationMenuItem>
+                            <NavigationMenuTrigger>Home</NavigationMenuTrigger>
+                            <NavigationMenuContent>
+                                <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+                                    <li className="row-span-3">
+                                        <NavigationMenuLink asChild>
+                                            <a
+                                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                                                href="/"
+                                            >
+                                                <div className="mb-2 mt-4 text-lg font-medium">
+                                                    FindYourMeet
+                                                </div>
+                                                <p className="text-sm leading-tight text-muted-foreground">
+                                                    Find and book perfect meeting spaces for your team.
+                                                </p>
+                                            </a>
+                                        </NavigationMenuLink>
+                                    </li>
+                                    <ListItem href="/rooms" title="Browse Rooms">
+                                        Explore available meeting rooms and spaces.
+                                    </ListItem>
+                                    <ListItem href="/booking" title="Book Now">
+                                        Reserve your ideal meeting space instantly.
+                                    </ListItem>
+                                    <ListItem href="/help" title="Help Center">
+                                        Get support and find answers to your questions.
+                                    </ListItem>
+                                </ul>
+                            </NavigationMenuContent>
+                        </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                <Link href="/about">About</Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                <Link href="/pricing">Pricing</Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                        <NavigationMenuItem>
+                            <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
+                                <Link href="/service">Service</Link>
+                            </NavigationMenuLink>
+                        </NavigationMenuItem>
+                    </NavigationMenuList>
+                </NavigationMenu>
+            </div>
+
+            <div className="hidden md:flex items-center space-x-2">
                 <ModeToggle />
                 <SignedOut>
-                    <SignInButton />
+                    <SignInButton>
+                        <Button variant="ghost" size="sm">Sign In</Button>
+                    </SignInButton>
                     <SignUpButton>
-                        <div className="flex flex-wrap items-center gap-2 md:flex-row">
-                            <Button >Sign up</Button>
-                        </div>
+                        <Button size="sm">Sign Up</Button>
                     </SignUpButton>
                 </SignedOut>
                 <SignedIn>
                     <UserButton />
                 </SignedIn>
+            </div>
+
+            <div className="flex md:hidden items-center space-x-2">
+                <ModeToggle />
+                <Sheet open={isOpen} onOpenChange={setIsOpen}>
+                    <SheetTrigger asChild>
+                        <Button variant="ghost" size="sm" className="lg:hidden">
+                            <Menu className="h-5 w-5" />
+                        </Button>
+                    </SheetTrigger>
+                    <SheetContent side="right" className="w-[300px]">
+                        <VisuallyHidden>
+                            <SheetTitle>Navigation Menu</SheetTitle>
+                        </VisuallyHidden>
+                        <div className="flex flex-col space-y-4 mt-6">
+                            <div className="flex flex-col space-y-3 p-5">
+                                <Link 
+                                    href="/" 
+                                    className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    onClick={closeSheet}
+                                >
+                                    Home
+                                </Link>
+                                <Link 
+                                    href="/about" 
+                                    className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    onClick={closeSheet}
+                                >
+                                    About
+                                </Link>
+                                <Link 
+                                    href="/pricing" 
+                                    className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    onClick={closeSheet}
+                                >
+                                    Pricing
+                                </Link>
+                                <Link 
+                                    href="/service" 
+                                    className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                                    onClick={closeSheet}
+                                >
+                                    Service
+                                </Link>
+                            </div>
+
+                            <div className="border-t pt-4 mt-6 p-5">
+                                <SignedOut>
+                                    <div className="flex flex-col space-y-2">
+                                        <SignInButton>
+                                            <Button variant="outline" className="w-full" onClick={closeSheet}>
+                                                Sign In
+                                            </Button>
+                                        </SignInButton>
+                                        <SignUpButton>
+                                            <Button className="w-full" onClick={closeSheet}>
+                                                Sign Up
+                                            </Button>
+                                        </SignUpButton>
+                                    </div>
+                                </SignedOut>
+                                <SignedIn>
+                                    <div className="flex items-center space-x-2">
+                                        <UserButton />
+                                        <span className="text-sm text-gray-600 dark:text-gray-400">Account</span>
+                                    </div>
+                                </SignedIn>
+                            </div>
+                        </div>
+                    </SheetContent>
+                </Sheet>
             </div>
         </div>
     )
@@ -144,9 +191,12 @@ function ListItem({
     return (
         <li {...props}>
             <NavigationMenuLink asChild>
-                <Link href={href}>
-                    <div className="text-sm leading-none font-medium">{title}</div>
-                    <p className="text-muted-foreground line-clamp-2 text-sm leading-snug">
+                <Link 
+                    href={href}
+                    className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                >
+                    <div className="text-sm font-medium leading-none">{title}</div>
+                    <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
                         {children}
                     </p>
                 </Link>
