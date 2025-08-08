@@ -10,16 +10,18 @@ datasource db {
 
 model user {
   id            Int      @id @default(autoincrement())
-  clerk_user_id String?     @unique
+  clerk_user_id String?  @unique
   email         String?  @unique
   name          String?
-  image_url     String
+  image_url     String?
   role_id       Int
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
 
   room_user room_user[]
-  role      role        @relation(fields: [role_id], references: [id])
+  owned_rooms room[] @relation("RoomOwner")
+
+  role role @relation(fields: [role_id], references: [id])
 }
 
 model role {
@@ -32,11 +34,14 @@ model role {
 
 model room {
   id         Int      @id @default(autoincrement())
+  owner_id   Int
   name       String?
-  code       Int?
+  code       Int?     @unique
+  status     Boolean? @default(true)
   created_at DateTime @default(now())
 
   room_user room_user[]
+  owner     user @relation("RoomOwner", fields: [owner_id], references: [id])
 }
 
 model room_user {
@@ -46,4 +51,6 @@ model room_user {
 
   room room @relation(fields: [room_id], references: [id])
   user user @relation(fields: [user_id], references: [id])
+
+  @@unique([room_id, user_id])
 }

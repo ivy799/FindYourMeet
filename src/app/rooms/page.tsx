@@ -1,3 +1,5 @@
+'use client'
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -12,23 +14,110 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSeparator,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
+import { useUser } from "@clerk/nextjs"
+import { useState } from "react"
 
 export default function Page() {
+  const { user } = useUser()
+
+  const makeRoom = async (name: string) => {
+    if (!user) {
+      console.error('User not authenticated or name is empty');
+      return;
+    }
+
+    try {
+      console.log("Fetching user data...");
+      const userRes = await fetch('/api/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!userRes.ok) {
+        const errorText = await userRes.text();
+        throw new Error(`Failed to get user: ${userRes.status} ${errorText}`);
+      }
+
+      const userData = await userRes.json();
+      console.log("User data:", userData);
+
+      console.log("Creating room...");
+      const roomData = {
+        name: name,
+        code: Math.floor(10000 + Math.random() * 90000),
+        status: true,
+        owner_id: userData.id,
+      };
+      console.log("Room data to send:", roomData);
+
+      const roomRes = await fetch("/api/room", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roomData)
+      });
+
+      if (!roomRes.ok) {
+        const errorData = await roomRes.json();
+        throw new Error(`Failed to create room: ${roomRes.status} ${JSON.stringify(errorData)}`);
+      }
+
+      const room = await roomRes.json();
+      console.log("Room created:", room);
+
+      console.log("Adding user to room...");
+      const roomUserData = {
+        room_id: room.id,
+        user_id: userData.id
+      };
+      console.log("Room user data to send:", roomUserData);
+
+      const roomUserRes = await fetch("/api/room_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(roomUserData)
+      });
+
+      if (!roomUserRes.ok) {
+        const errorData = await roomUserRes.json();
+        throw new Error(`Failed to add user to room: ${roomUserRes.status} ${JSON.stringify(errorData)}`);
+      }
+
+      const dataUserRoom = await roomUserRes.json();
+      console.log("User added to room:", dataUserRoom);
+
+    } catch (error) {
+      console.error('Error creating room:', error);
+    }
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-1">
-            <div className="bg-muted/50 aspect-[32/9] rounded-xl flex items-center justify-center">
-              <div className="flex h-5 items-center space-x-4 text-sm">
-                <Button>Make Room</Button>
-                <Separator orientation="vertical" />
-                <Button>Join Room</Button>
-              </div>
-            </div>
-          </div>
-        </div>
         <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
@@ -44,13 +133,92 @@ export default function Page() {
           </Breadcrumb>
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-5">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <div key={i} className="bg-muted/50 aspect-square rounded-xl" />
-            ))}
+          <div className="grid auto-rows-min gap-4 md:grid-cols-1">
+            <div className="bg-muted/50 aspect-[32/9] rounded-xl flex items-center justify-center">
+              <div className="flex h-5 items-center space-x-4 text-sm">
+                <Dialog>
+                  <DialogTrigger asChild>
+                    <Button>
+                      Make Room
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const name = formData.get("name") as string;
+                        await makeRoom(name);
+                      }}
+                    >
+                      <DialogHeader>
+                        <DialogTitle>Room Details</DialogTitle>
+                        <DialogDescription>
+                          Masukkan detail room kamu
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="grid gap-4">
+                        <div className="grid gap-3">
+                          <Label htmlFor="name-1">Name</Label>
+                          <Input
+                            id="name-1"
+                            placeholder="Room Name"
+                            required
+                            name="name"
+                          />
+                        </div>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline" type="button">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit">
+                          Create Room
+                        </Button>
+                      </DialogFooter>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                <Separator orientation="vertical" />
+                <Dialog>
+                  <form>
+                    <DialogTrigger asChild>
+                      <Button>Join Room</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Enter Room Code</DialogTitle>
+                      </DialogHeader>
+                      <div className="p-10 flex justify-center">
+                        <InputOTP maxLength={6}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                          </InputOTPGroup>
+                          <InputOTPSeparator />
+                          <InputOTPGroup>
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button variant="outline">Cancel</Button>
+                        </DialogClose>
+                        <Button type="submit">Join Room</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </form>
+                </Dialog>
+              </div>
+            </div>
           </div>
         </div>
       </SidebarInset>
     </SidebarProvider>
   )
 }
+
