@@ -35,8 +35,6 @@ import {
 import { useUser } from "@clerk/nextjs"
 import {
   Card,
-  CardAction,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
@@ -50,6 +48,7 @@ import Link from "next/link"
 export default function Page() {
   const { user } = useUser()
   const [rooms, setRoom] = useState([]);
+  const [joinedRoom, setJoinedRoom] = useState([])
 
   useEffect(() => {
     const fetchUserAndRooms = async () => {
@@ -66,7 +65,7 @@ export default function Page() {
         }
 
         const userData = await userRes.json();
-        
+
         const roomsRes = await fetch('/api/room', {
           method: 'GET',
           headers: {
@@ -86,6 +85,40 @@ export default function Page() {
     };
 
     fetchUserAndRooms();
+  }, [])
+
+  useEffect(() => {
+    const fetchJoinedRoom = async () => {
+      try {
+
+        const userRes = await fetch('/api/user', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!userRes.ok) {
+          throw new Error("Failed to fetch user");
+        }
+
+        const userData = await userRes.json();
+
+        const joinedRoom = await fetch(`/api/room_user/${userData.id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const fixJoinedRoom = await joinedRoom.json()
+        setJoinedRoom(fixJoinedRoom)
+      } catch (error) {
+
+      }
+    }
+
+    fetchJoinedRoom()
   }, [])
 
   const makeRoom = async (name: string) => {
@@ -163,6 +196,66 @@ export default function Page() {
     }
   }
 
+  const joinRoom = async (roomCode: number) => {
+    if (!user) {
+      console.error('User not authenticated or name is empty');
+      return;
+    }
+
+    try {
+      // getting user
+      const userRes = await fetch('/api/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!userRes.ok) {
+        const errorText = await userRes.text();
+        throw new Error(`Failed to get user: ${userRes.status} ${errorText}`);
+      }
+      const userData = await userRes.json();
+      console.log("User data:", userData);
+
+
+      // getting room by code
+      const findRoom = await fetch(`/api/room/find/${roomCode}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      if (!findRoom.ok) {
+        throw new Error("no room")
+      }
+      const fixRoom = await findRoom.json()
+      console.log(fixRoom)
+
+
+      // create new user_room data
+      const userAndRoomDetail = {
+        room_id: fixRoom.id,
+        user_id: userData.id
+      };
+      const makeNewRoomUser = await fetch("/api/room_user", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userAndRoomDetail)
+      })
+      if (!makeNewRoomUser.ok) {
+        throw new Error("Failed to join Room")
+      }
+      const newUserRoomFix = await makeNewRoomUser.json()
+      console.log(newUserRoomFix)
+
+
+    } catch (error) {
+
+    }
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar />
@@ -176,7 +269,7 @@ export default function Page() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Recent Rooms</BreadcrumbPage>
+                <BreadcrumbPage>Rooms</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -230,26 +323,31 @@ export default function Page() {
                 </Dialog>
                 <Separator orientation="vertical" />
                 <Dialog>
-                  <form>
-                    <DialogTrigger asChild>
-                      <Button>Join Room</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
+                  <DialogTrigger asChild>
+                    <Button>Join Room</Button>
+                  </DialogTrigger>
+                  <DialogContent className="sm:max-w-[425px]">
+                    <form
+                      onSubmit={async (e) => {
+                        e.preventDefault();
+                        const formData = new FormData(e.currentTarget);
+                        const roomCodeStr = formData.get("roomCode") as string;
+                        const roomCode = Number(roomCodeStr);
+                        console.log(roomCode)
+                        await joinRoom(roomCode);
+                      }}
+                    >
                       <DialogHeader>
                         <DialogTitle>Enter Room Code</DialogTitle>
                       </DialogHeader>
                       <div className="p-10 flex justify-center">
-                        <InputOTP maxLength={6}>
+                        <InputOTP maxLength={5} name="roomCode">
                           <InputOTPGroup>
                             <InputOTPSlot index={0} />
                             <InputOTPSlot index={1} />
                             <InputOTPSlot index={2} />
-                          </InputOTPGroup>
-                          <InputOTPSeparator />
-                          <InputOTPGroup>
                             <InputOTPSlot index={3} />
                             <InputOTPSlot index={4} />
-                            <InputOTPSlot index={5} />
                           </InputOTPGroup>
                         </InputOTP>
                       </div>
@@ -259,8 +357,8 @@ export default function Page() {
                         </DialogClose>
                         <Button type="submit">Join Room</Button>
                       </DialogFooter>
-                    </DialogContent>
-                  </form>
+                    </form>
+                  </DialogContent>
                 </Dialog>
               </div>
             </div>
@@ -270,7 +368,7 @@ export default function Page() {
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
-                <BreadcrumbPage>Recent Rooms</BreadcrumbPage>
+                <BreadcrumbPage>My Rooms</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -279,23 +377,58 @@ export default function Page() {
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             {rooms && rooms.length > 0 ? (
               rooms.map((room: any) => (
-          <Card className="w-full max-w-sm" key={room.id}>
-            <CardHeader>
-              <CardTitle>{room.name}</CardTitle>
-              <CardDescription>Kode: {room.code}</CardDescription>
-            </CardHeader>
-            <CardFooter className="flex-col gap-2">
-                <Link href={`/rooms/${room.id}`}>
-                  <Button type="button" className="w-full">
-                    See Detail <ChevronRightIcon />
-                  </Button>
-                </Link>
-            </CardFooter>
-          </Card>
+                <Card className="w-full max-w-sm" key={room.id}>
+                  <CardHeader>
+                    <CardTitle>{room.name}</CardTitle>
+                    <CardDescription>Kode: {room.code}</CardDescription>
+                  </CardHeader>
+                  <CardFooter className="flex-col gap-2">
+                    <Link href={`/rooms/${room.id}`}>
+                      <Button type="button" className="w-full">
+                        See Detail <ChevronRightIcon />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
               ))
             ) : (
               <div className="col-span-3 text-center text-muted-foreground">
-          No rooms found.
+                No rooms found.
+              </div>
+            )}
+          </div>
+        </div>
+
+        <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Joined Rooms</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            {joinedRoom && joinedRoom.length > 0 ? (
+              joinedRoom.map((joinedRoom: any) => (
+                <Card className="w-full max-w-sm" key={joinedRoom.room.id}>
+                  <CardHeader>
+                    <CardTitle>{joinedRoom.room.name}</CardTitle>
+                    <CardDescription>Kode: {joinedRoom.room.code}</CardDescription>
+                  </CardHeader>
+                  <CardFooter className="flex-col gap-2">
+                    <Link href={`/rooms/${joinedRoom.room.id}`}>
+                      <Button type="button" className="w-full">
+                        See Detail <ChevronRightIcon />
+                      </Button>
+                    </Link>
+                  </CardFooter>
+                </Card>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-muted-foreground">
+                No rooms found.
               </div>
             )}
           </div>

@@ -21,18 +21,14 @@ import {
   AvatarImage,
 } from "@/components/ui/avatar"
 import {
-  Card,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarRail,
-  SidebarInput
+  SidebarInput,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton
 } from "@/components/ui/sidebar"
 
 const data = {
@@ -67,49 +63,76 @@ interface sideBarLeftProps extends React.ComponentProps<typeof Sidebar> {
 
 export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
   return (
-    <Sidebar className="border-r-0" {...props}>
-      <SidebarHeader>
-        <div className="mt-20">
-          <h3 className="scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight first:mt-0">
+    <Sidebar
+      className="border-r-0 bg-background/60 backdrop-blur supports-[backdrop-filter]:bg-background/40"
+      {...props}
+    >
+      <SidebarHeader className="px-4 pt-8">
+        <div className="mt-12">
+          <h3
+            className="scroll-m-20 border-b pb-2 text-2xl font-semibold tracking-tight first:mt-0
+                       bg-gradient-to-r from-neutral-900 to-neutral-500/80 bg-clip-text text-transparent
+                       dark:from-neutral-100 dark:to-neutral-300/70"
+          >
             Users
           </h3>
         </div>
       </SidebarHeader>
-      <SidebarContent>
-        <div className="p-2">
-          <SidebarInput placeholder="Search the users.." />
+
+      <SidebarContent className="gap-0">
+        <div className="p-3">
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <SidebarInput
+              placeholder="Search the users.."
+              className="pl-9 h-9 rounded-lg bg-muted/40 border-muted/50 focus-visible:ring-2 focus-visible:ring-muted-foreground/20"
+            />
+          </div>
         </div>
-        {roomUser && roomUser.length > 0 ? (
-          roomUser.map((ru) => (
-            <Card className="w-full max-w-sm mb-2" key={ru.user.id}>
-              <CardHeader>
-                <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={ru.user.image_url} />
-                  <AvatarFallback className="rounded-lg">
-                    {ru.user.name
-                      ? ru.user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                      : "CN"}
-                  </AvatarFallback>
-                </Avatar>
-                <CardTitle>{ru.user.name || "Username"}</CardTitle>
-              </CardHeader>
-            </Card>
-          ))
-        ) : (
-          <Card className="w-full max-w-sm">
-            <CardHeader>
-              <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarFallback className="rounded-lg">CN</AvatarFallback>
-              </Avatar>
-              <CardTitle>No users</CardTitle>
-            </CardHeader>
-          </Card>
-        )}
+
+        <div className="px-2.5 pb-2">
+          <SidebarMenu>
+            {roomUser && roomUser.length > 0 ? (
+              roomUser.map((ru) => (
+                <SidebarMenuItem key={ru.user.id}>
+                  <SidebarMenuButton size="sm" className="gap-3 h-9" asChild={false}>
+                    <>
+                      <Avatar className="h-7 w-7 rounded-lg ring-1 ring-border" aria-label="User avatar">
+                        <AvatarImage
+                          src={ru.user.image_url || "/placeholder.svg"}
+                          alt={ru.user.name ? `${ru.user.name} avatar` : "User avatar"}
+                          className="object-cover"
+                        />
+                        <AvatarFallback className="rounded-lg text-[10px] font-medium">
+                          {ru.user.name
+                            ? ru.user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .toUpperCase()
+                            : "CN"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="truncate text-sm font-medium">{ru.user.name || "Username"}</span>
+                    </>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))
+            ) : (
+              <SidebarMenuItem>
+                <SidebarMenuButton size="sm" disabled className="text-muted-foreground gap-2 h-9">
+                  <Inbox className="h-4 w-4" aria-hidden="true" />
+                  <span>No users</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )}
+          </SidebarMenu>
+        </div>
       </SidebarContent>
+
       <SidebarRail />
     </Sidebar>
   )
