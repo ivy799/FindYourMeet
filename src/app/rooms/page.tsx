@@ -33,10 +33,60 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { useUser } from "@clerk/nextjs"
-import { useState } from "react"
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { ChevronRightIcon } from "lucide-react"
+import { useEffect, useState } from "react"
+import Link from "next/link"
+
 
 export default function Page() {
   const { user } = useUser()
+  const [rooms, setRoom] = useState([]);
+
+  useEffect(() => {
+    const fetchUserAndRooms = async () => {
+      try {
+        const userRes = await fetch('/api/user', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!userRes.ok) {
+          throw new Error("Failed to fetch user");
+        }
+
+        const userData = await userRes.json();
+        
+        const roomsRes = await fetch('/api/room', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!roomsRes.ok) {
+          throw new Error("Failed to fetch rooms");
+        }
+
+        const roomsData = await roomsRes.json();
+        setRoom(roomsData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchUserAndRooms();
+  }, [])
 
   const makeRoom = async (name: string) => {
     if (!user) {
@@ -45,7 +95,6 @@ export default function Page() {
     }
 
     try {
-      console.log("Fetching user data...");
       const userRes = await fetch('/api/user', {
         method: 'GET',
         headers: {
@@ -215,6 +264,40 @@ export default function Page() {
                 </Dialog>
               </div>
             </div>
+          </div>
+        </div>
+        <header className="bg-background sticky top-0 flex h-16 shrink-0 items-center gap-2 border-b px-4">
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>
+                <BreadcrumbPage>Recent Rooms</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </header>
+        <div className="flex flex-1 flex-col gap-4 p-4">
+          <div className="grid auto-rows-min gap-4 md:grid-cols-3">
+            {rooms && rooms.length > 0 ? (
+              rooms.map((room: any) => (
+          <Card className="w-full max-w-sm" key={room.id}>
+            <CardHeader>
+              <CardTitle>{room.name}</CardTitle>
+              <CardDescription>Kode: {room.code}</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex-col gap-2">
+                <Link href={`/rooms/${room.id}`}>
+                  <Button type="button" className="w-full">
+                    See Detail <ChevronRightIcon />
+                  </Button>
+                </Link>
+            </CardFooter>
+          </Card>
+              ))
+            ) : (
+              <div className="col-span-3 text-center text-muted-foreground">
+          No rooms found.
+              </div>
+            )}
           </div>
         </div>
       </SidebarInset>

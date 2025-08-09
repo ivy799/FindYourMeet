@@ -18,10 +18,19 @@ model user {
   created_at    DateTime @default(now())
   updated_at    DateTime @default(now())
 
-  room_user room_user[]
-  owned_rooms room[] @relation("RoomOwner")
+  room_user   room_user[]
+  owned_rooms room[]      @relation("RoomOwner")
 
-  role role @relation(fields: [role_id], references: [id])
+  role        role          @relation(fields: [role_id], references: [id])
+  user_detail user_detail[]
+}
+
+model user_detail {
+  id      Int     @id @default(autoincrement())
+  user_id Int
+  address String
+
+  user user @relation(fields: [user_id], references: [id])
 }
 
 model role {
@@ -41,7 +50,7 @@ model room {
   created_at DateTime @default(now())
 
   room_user room_user[]
-  owner     user @relation("RoomOwner", fields: [owner_id], references: [id])
+  owner     user        @relation("RoomOwner", fields: [owner_id], references: [id])
 }
 
 model room_user {
