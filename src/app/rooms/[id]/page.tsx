@@ -147,7 +147,7 @@ export default async function Page({ params }: PageProps) {
                     </div>
                 </div>
             </SidebarInset>
-            <SidebarRight roomCode={roomDetails?.code ?? undefined} ownerName={roomDetails?.owner?.name ?? undefined} />
+            <SidebarRight roomCode={roomDetails?.code ?? undefined} ownerName={roomDetails?.owner?.name ?? undefined} ownerImage={roomDetails?.owner.image_url ?? ""} />
         </SidebarProvider>
     )
 }
