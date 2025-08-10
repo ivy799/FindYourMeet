@@ -1,3 +1,5 @@
+'use client'
+
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
 import {
@@ -12,102 +14,91 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { auth } from "@clerk/nextjs/server"
-import { PrismaClient } from "@prisma/client"
 import MapComponent from "@/components/map"
-
-const prisma = new PrismaClient();
+import { useState, useEffect } from "react"
+import { useUser } from "@clerk/nextjs"
+import type { POI } from "@/hooks/use-poi"
 
 interface PageProps {
     params: Promise<{ id: string }>
 }
 
-export default async function Page({ params }: PageProps) {
-    const { id } = await params;
-    
-    let roomDetails = null;
-    let userLocations: { numLat: number; numLot: number }[] = [];
+export default function Page({ params }: PageProps) {
+    const { user } = useUser()
+    const [roomId, setRoomId] = useState<string>('')
+    const [roomDetails, setRoomDetails] = useState<any>(null)
+    const [userLocations, setUserLocations] = useState<{ numLat: number; numLot: number }[]>([])
+    const [pois, setPois] = useState<POI[]>([])
+    const [poisLoading, setPoisLoading] = useState(false)
+    const [loading, setLoading] = useState(true)
 
-    try {
-        const { userId } = await auth();
-
-        if (!userId) {
-            console.log("No user ID found");
-            return;
+    useEffect(() => {
+        const getRoomId = async () => {
+            const resolvedParams = await params
+            setRoomId(resolvedParams.id)
         }
+        getRoomId()
+    }, [params])
 
-        const user = await prisma.user.findUnique({
-            where: { clerk_user_id: userId }
-        });
+    useEffect(() => {
+        if (!roomId || !user) return
 
-        if (!user) {
-            console.log("User not found in database");
-            return;
-        }
-
-        const roomId = parseInt(id);
-
-        if (isNaN(roomId)) {
-            console.log("Invalid room ID");
-            return;
-        }
-
-        roomDetails = await prisma.room.findFirst({
-            where: { id: roomId },
-            include: {
-                owner: true,
-                room_user: {
-                    include: {
-                        user: true
-                    }
-                }
-            }
-        });
-
-        const userAdressAll = await prisma.room.findMany({
-            where: {
-                id: roomId
-            },
-            select: {
-                room_user: {
-                    select: {
-                        user: {
-                            select: {
-                                user_detail: {
-                                    select: {
-                                        address: true,
-                                        lat: true,
-                                        long: true
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        });
-
-        userAdressAll.forEach(room => {
-            room.room_user.forEach(ru => {
-                const lat = ru.user?.user_detail?.[0]?.lat;
-                const long = ru.user?.user_detail?.[0]?.long;
+        const fetchRoomData = async () => {
+            try {
+                setLoading(true)
                 
-                if (lat && long) {
-                    const numLat = parseFloat(lat);
-                    const numLot = parseFloat(long);
-                    
-                    if (!isNaN(numLat) && !isNaN(numLot)) {
-                        userLocations.push({ numLat, numLot });
-                    }
+                const roomResponse = await fetch(`/api/room/${roomId}`)
+                if (!roomResponse.ok) throw new Error('Failed to fetch room')
+                const room = await roomResponse.json()
+                setRoomDetails(room)
+
+                const locationsResponse = await fetch(`/api/room/${roomId}/locations`)
+                if (locationsResponse.ok) {
+                    const locations = await locationsResponse.json()
+                    console.log('Fetched locations:', locations)
+                    setUserLocations(locations)
+                } else {
+                    console.log('Failed to fetch locations, using mock data for testing')
+                    setUserLocations([
+                        { numLat: -6.2088, numLot: 106.8456 },
+                        { numLat: -6.2000, numLot: 106.8400 }
+                    ])
                 }
-            });
-        });
 
-        console.log("Valid user locations:", userLocations);
+            } catch (error) {
+                console.error('Error fetching room data:', error)
+                setUserLocations([
+                    { numLat: -6.2088, numLot: 106.8456 },
+                    { numLat: -6.2000, numLot: 106.8400 }
+                ])
+            } finally {
+                setLoading(false)
+            }
+        }
 
-    } catch (error) {
-        console.error("Page Error:", error);
+        fetchRoomData()
+    }, [roomId, user])
+
+    const handlePOIsUpdate = (newPois: POI[]) => {
+        console.log('POIs updated:', newPois.length)
+        setPois(newPois)
+        setPoisLoading(false)
     }
+
+    useEffect(() => {
+        if (userLocations.length > 0) {
+            setPoisLoading(true)
+        }
+    }, [userLocations])
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            </div>
+        )
+    }
+
     const safeRoomUser = roomDetails?.room_user?.map((ru: any) => ({
         ...ru,
         user: {
@@ -115,9 +106,7 @@ export default async function Page({ params }: PageProps) {
             created_at: ru.user.created_at instanceof Date ? ru.user.created_at.toISOString() : ru.user.created_at,
             updated_at: ru.user.updated_at instanceof Date ? ru.user.updated_at.toISOString() : ru.user.updated_at,
         }
-    }));
-
-    console.log(roomDetails?.room_user)
+    })) || []
 
     return (
         <SidebarProvider>
@@ -142,12 +131,21 @@ export default async function Page({ params }: PageProps) {
                     </div>
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
-                    <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl p-4">
-                        <MapComponent locations={userLocations} />
+                    <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl p-4 relative z-0">
+                        <MapComponent 
+                            locations={userLocations} 
+                            onPOIsUpdate={handlePOIsUpdate}
+                        />
                     </div>
                 </div>
             </SidebarInset>
-            <SidebarRight roomCode={roomDetails?.code ?? undefined} ownerName={roomDetails?.owner?.name ?? undefined} ownerImage={roomDetails?.owner.image_url ?? ""} />
+            <SidebarRight 
+                roomCode={roomDetails?.code} 
+                ownerName={roomDetails?.owner?.name} 
+                ownerImage={roomDetails?.owner?.image_url}
+                pois={pois}
+                poisLoading={poisLoading}
+            />
         </SidebarProvider>
     )
 }
