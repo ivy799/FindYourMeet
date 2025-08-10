@@ -29,6 +29,8 @@ model user_detail {
   id      Int     @id @default(autoincrement())
   user_id Int
   address String
+  lat     String?
+  long    String?
 
   user user @relation(fields: [user_id], references: [id])
 }

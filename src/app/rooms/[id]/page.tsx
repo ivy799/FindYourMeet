@@ -1,36 +1,36 @@
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbList,
+    BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
 import { Separator } from "@/components/ui/separator"
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { auth } from "@clerk/nextjs/server"
 import { PrismaClient } from "@prisma/client"
+import MapComponent from "@/components/map"
 
 const prisma = new PrismaClient();
 
 interface PageProps {
-  params: Promise<{ id: string }>
+    params: Promise<{ id: string }>
 }
 
 export default async function Page({ params }: PageProps) {
     const { id } = await params;
-
-    console.log("Page: Received ID:", id); 
-
+    
     let roomDetails = null;
+    let userLocations: { numLat: number; numLot: number }[] = [];
 
     try {
         const { userId } = await auth();
-        
+
         if (!userId) {
             console.log("No user ID found");
             return;
@@ -46,7 +46,7 @@ export default async function Page({ params }: PageProps) {
         }
 
         const roomId = parseInt(id);
-        
+
         if (isNaN(roomId)) {
             console.log("Invalid room ID");
             return;
@@ -64,7 +64,46 @@ export default async function Page({ params }: PageProps) {
             }
         });
 
-        console.log(roomDetails)
+        const userAdressAll = await prisma.room.findMany({
+            where: {
+                id: roomId
+            },
+            select: {
+                room_user: {
+                    select: {
+                        user: {
+                            select: {
+                                user_detail: {
+                                    select: {
+                                        address: true,
+                                        lat: true,
+                                        long: true
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        userAdressAll.forEach(room => {
+            room.room_user.forEach(ru => {
+                const lat = ru.user?.user_detail?.[0]?.lat;
+                const long = ru.user?.user_detail?.[0]?.long;
+                
+                if (lat && long) {
+                    const numLat = parseFloat(lat);
+                    const numLot = parseFloat(long);
+                    
+                    if (!isNaN(numLat) && !isNaN(numLot)) {
+                        userLocations.push({ numLat, numLot });
+                    }
+                }
+            });
+        });
+
+        console.log("Valid user locations:", userLocations);
 
     } catch (error) {
         console.error("Page Error:", error);
@@ -78,9 +117,11 @@ export default async function Page({ params }: PageProps) {
         }
     }));
 
+    console.log(roomDetails?.room_user)
+
     return (
         <SidebarProvider>
-            <SidebarLeft roomUser={safeRoomUser}/>
+            <SidebarLeft roomUser={safeRoomUser} />
             <SidebarInset>
                 <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center gap-2">
                     <div className="flex flex-1 items-center gap-2 px-3">
@@ -102,20 +143,11 @@ export default async function Page({ params }: PageProps) {
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl p-4">
-                        {roomDetails ? (
-                            <div>
-                                <h1 className="text-2xl font-bold">{roomDetails.name}</h1>
-                                <p>Room Code: {roomDetails.code}</p>
-                                <p>Owner: {roomDetails.owner.name}</p>
-                                <p>Members: {roomDetails.room_user.length}</p>
-                            </div>
-                        ) : (
-                            <p>Room not found or loading...</p>
-                        )}
+                        <MapComponent locations={userLocations} />
                     </div>
                 </div>
             </SidebarInset>
-            <SidebarRight roomCode={roomDetails?.code ?? undefined} ownerName={roomDetails?.owner?.name ?? undefined}/>
+            <SidebarRight roomCode={roomDetails?.code ?? undefined} ownerName={roomDetails?.owner?.name ?? undefined} />
         </SidebarProvider>
     )
 }
