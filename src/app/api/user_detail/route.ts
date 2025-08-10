@@ -74,3 +74,26 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  try {
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { clerk_user_id: userId }
+    });
+
+    const userDetail = await prisma.user_detail.findFirst({
+      where: { user_id: user?.id }
+    })
+
+    return NextResponse.json(userDetail)
+
+  } catch (error) {
+    console.error("Error finding room:", error);
+  }
+}

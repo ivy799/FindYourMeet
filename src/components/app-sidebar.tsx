@@ -25,12 +25,36 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useUser } from "@clerk/nextjs"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
   const [address, setAddress] = useState<string | undefined>()
+
+  useEffect(() => {
+    const fetchUserDetail = async () => {
+      try {
+
+        const addUserDetail = await fetch('/api/user_detail', {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        const userDetail = await addUserDetail.json()
+        if (!userDetail) {
+          throw Error
+        }
+
+        setAddress(userDetail.address)
+      } catch (error) {
+
+      }
+    };
+    fetchUserDetail();
+  }, [])
 
   const addAddress = async (address: string) => {
     if (!user) {
@@ -71,7 +95,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         throw Error
       }
 
-      setAddress(address)
     } catch (error) {
       console.log("error adding address")
     }
