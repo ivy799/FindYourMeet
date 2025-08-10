@@ -3,7 +3,7 @@
 import * as React from "react"
 import { Edit } from "lucide-react"
 
-import { DatePicker } from "@/components/date-picker"
+import { Calendar } from "./ui/calendar"
 import {
   Sidebar,
   SidebarContent,
@@ -31,6 +31,7 @@ import { useState, useEffect } from "react"
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
   const [address, setAddress] = useState<string | undefined>()
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
 
   useEffect(() => {
     const fetchUserDetail = async () => {
@@ -102,29 +103,31 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar {...props}>
-      <SidebarHeader className="border-sidebar-border h-16 border-b">
-      </SidebarHeader>
       <SidebarContent>
-        <h3 className="scroll-m-20 text-sm font-semibold uppercase tracking-wider text-muted-foreground">My Address</h3>
-        <div className="mt-3 rounded-lg border border-sidebar-border bg-background/60 p-3 shadow-sm transition-colors hover:bg-background/80">
-          <div className="flex items-center gap-2">
-            <h5 className="scroll-m-20 text-base font-semibold tracking-tight">{address}</h5>
+        <div className="p-1">
+          <div className="mt-18"></div>
+          <div className="rounded-xl border border-sidebar-border bg-background/80 p-4 shadow transition-colors hover:bg-background/90 flex flex-col items-center justify-between">
+            <div className="flex items-center gap-3">
+            </div>
             <Dialog>
-              <form>
+              <div className="flex flex-row items-center w-full justify-between">
+                <span className="text-base font-medium text-foreground break-words max-w-[140px]">
+                  {address || <span className="text-muted-foreground italic">No address set</span>}
+                </span>
                 <DialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="ml-auto rounded-full border-dashed px-2.5 shadow-none hover:bg-muted/60 bg-transparent"
+                    variant="ghost"
+                    size="icon"
+                    className="ml-2 rounded-full border border-input bg-transparent hover:bg-muted transition-colors"
                     aria-label="Edit address"
                   >
-                    <Edit className="h-4 w-4" />
+                    <Edit className="h-5 w-5 text-muted-foreground" />
                     <span className="sr-only">Edit</span>
                   </Button>
                 </DialogTrigger>
-
-                <DialogContent className="sm:max-w-[480px]">
-                  <form action="submit"
+                <DialogContent className="sm:max-w-[400px] bg-background border border-sidebar-border rounded-xl shadow-xl">
+                  <form
+                    action="submit"
                     onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
@@ -133,37 +136,48 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     }}
                   >
                     <DialogHeader>
-                      <DialogTitle className="text-lg">Edit Address</DialogTitle>
-                      <DialogDescription className="text-muted-foreground">
-                        Make changes to your address here. Click save when you&apos;re done.
+                      <DialogTitle className="text-lg font-semibold">Edit Address</DialogTitle>
+                      <DialogDescription className="text-sm text-muted-foreground">
+                        Update your address below and click save.
                       </DialogDescription>
                     </DialogHeader>
-
-                    <div className="grid gap-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor="address-1">Address</Label>
-                        <Input id="address-1" name="address" placeholder="Enter your address here" className="h-10" />
-                      </div>
+                    <div className="mt-4 grid gap-3">
+                      <Label htmlFor="address-1" className="text-sm font-medium">
+                        Address
+                      </Label>
+                      <Input
+                        id="address-1"
+                        name="address"
+                        placeholder="Enter your address"
+                        className="h-10 bg-background border border-input rounded-md px-3 text-foreground"
+                        defaultValue={address}
+                        autoComplete="off"
+                      />
                     </div>
-
-                    <DialogFooter className="gap-2 sm:gap-3">
+                    <DialogFooter className="mt-6 flex gap-2">
                       <DialogClose asChild>
-                        <Button variant="outline">Cancel</Button>
+                        <Button variant="outline" className="w-24">
+                          Cancel
+                        </Button>
                       </DialogClose>
-                      <Button type="submit" className="shadow-sm">
+                      <Button type="submit" className="w-32 shadow-sm">
                         Save changes
                       </Button>
                     </DialogFooter>
                   </form>
                 </DialogContent>
-              </form>
+              </div>
+              <Calendar
+                mode="single"
+                selected={date}
+                onSelect={setDate}
+                className="rounded-md border shadow-sm p-2 mt-3"
+                captionLayout="dropdown"
+              />
             </Dialog>
           </div>
         </div>
-        <DatePicker />
-        <SidebarSeparator className="mx-0" />
       </SidebarContent>
-      <SidebarRail />
     </Sidebar>
   )
 }

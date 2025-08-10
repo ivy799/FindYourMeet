@@ -16,7 +16,7 @@ export function userSync() {
             }
 
             const syncStatus = localStorage.getItem(`user-sync-${user.id}`)
-            if (syncStatus == "completed") {
+            if (syncStatus === "completed") {
                 setHasSync(true)
                 return
             }
@@ -39,7 +39,7 @@ export function userSync() {
 
                 const data = await response.json()
                 if (data.success) {
-                    localStorage.setItem('user-sync-${user.id}', 'completed')
+                    localStorage.setItem(`user-sync-${user.id}`, 'completed')
                     setHasSync(true)
                 }
             } catch (error) {
