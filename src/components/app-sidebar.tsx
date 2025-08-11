@@ -6,6 +6,7 @@ import { Edit } from "lucide-react"
 import { Calendar } from "./ui/calendar"
 import {
   Sidebar,
+  SidebarHeader,
   SidebarContent,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
@@ -24,12 +25,14 @@ import { Label } from "@/components/ui/label"
 import { useUser } from "@clerk/nextjs"
 import { useState, useEffect } from "react"
 import { BlinkBlur } from "react-loading-indicators";
-
+import { ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
   const [address, setAddress] = useState<string | undefined>()
   const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const router = useRouter()
 
   useEffect(() => {
     const fetchUserDetail = async () => {
@@ -99,11 +102,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }
 
+  const handleBackToHome = () => {
+    router.push('/')
+  }
+
   return (
     <Sidebar {...props}>
+      <SidebarHeader className="px-4 pt-8 border-b-0">
+        <div className="mt-12">
+          <h3
+            className="scroll-m-20 pb-2 text-lg font-bold tracking-tight first:mt-0
+             bg-gradient-to-r from-black to-black/70 dark:from-white dark:to-white/70 bg-clip-text text-transparent "
+          >
+            Address Details
+          </h3>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleBackToHome}
+            className="p-2 gap-1.5 text-muted-foreground hover:text-foreground transition-colors text-xs px-0 h-auto font-normal"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to Home
+          </Button>
+        </div>
+      </SidebarHeader>
       <SidebarContent>
         <div className="p-1">
-          <div className="mt-18"></div>
           <div className="rounded-xl border border-sidebar-border bg-background/80 p-4 shadow transition-colors hover:bg-background/90 flex flex-col items-center justify-between">
             <div className="flex items-center gap-3">
             </div>

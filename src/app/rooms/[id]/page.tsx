@@ -14,14 +14,11 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import { Button } from "@/components/ui/button"
 import MapComponent from "@/components/map"
 import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import type { POI } from "@/hooks/use-poi"
 import { FourSquare } from "react-loading-indicators"
-import { ArrowLeft } from "lucide-react"
-import { useRouter } from "next/navigation"
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -29,7 +26,6 @@ interface PageProps {
 
 export default function Page({ params }: PageProps) {
     const { user } = useUser()
-    const router = useRouter()
     const [roomId, setRoomId] = useState<string>('')
     const [roomDetails, setRoomDetails] = useState<any>(null)
     const [userLocations, setUserLocations] = useState<{ numLat: number; numLot: number }[]>([])
@@ -96,10 +92,6 @@ export default function Page({ params }: PageProps) {
         }
     }, [userLocations])
 
-    const handleBackToRooms = () => {
-        router.push('/rooms')
-    }
-
     if (loading) {
         return (
             <div className="flex items-center justify-center min-h-screen bg-background">
@@ -129,15 +121,6 @@ export default function Page({ params }: PageProps) {
             <SidebarInset>
                 <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center gap-2 border-b">
                     <div className="flex flex-1 items-center gap-2 px-3">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleBackToRooms}
-                            className="gap-2 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            <ArrowLeft className="h-4 w-4" />
-                            Back to Rooms
-                        </Button>
                         <SidebarTrigger />
                         <Separator
                             orientation="vertical"

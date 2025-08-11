@@ -176,9 +176,6 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
           </div>
         </div>
       </SidebarHeader>
-
-      <SidebarSeparator className="mx-4" />
-
       <SidebarContent className="px-4">
         <div className="space-y-4">
           <div className="flex items-center gap-2 pt-3">
