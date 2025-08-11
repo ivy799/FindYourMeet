@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { usePOI, type Location, type POI } from "@/hooks/use-poi";
+import { FourSquare } from "react-loading-indicators";
 
 type MapComponentProps = {
     locations: Location[];
@@ -10,19 +11,19 @@ type MapComponentProps = {
 };
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371000; 
+    const R = 6371000;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-        Math.sin(dLat/2) * Math.sin(dLat/2) +
-        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-        Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     const distance = R * c;
     return distance;
 }
 
-const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => { 
+const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
     const [mounted, setMounted] = useState(false);
     const { pois, loading: poisLoading, centroid } = usePOI(locations, 2);
 
@@ -37,7 +38,7 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
     }, []);
 
     useEffect(() => {
-        if (!mounted || !centroid) return;
+        if (!mounted || !centroid || poisLoading) return;
 
         let map: any;
         let markers: any[] = [];
@@ -70,7 +71,7 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                 locations.forEach((loc, index) => {
                     const distance = calculateDistance(centroid.lat, centroid.lot, loc.numLat, loc.numLot);
                     const isWithinRadius = distance <= radiusMeters;
-                    
+
                     const markerIcon = L.divIcon({
                         className: 'custom-marker',
                         html: `<div style="background:${isWithinRadius ? '#10b981' : '#ef4444'};width:20px;height:20px;border-radius:50%;border:2px solid white;display:flex;align-items:center;justify-content:center;color:white;font-size:10px;font-weight:bold;">${index + 1}</div>`,
@@ -100,43 +101,45 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                 }).addTo(map).bindPopup("🎯 Meeting Center");
                 markers.push(centroidMarker);
 
-                pois.forEach((poi) => {
-                    const getPoiIcon = (poi: POI) => {
-                        const amenity = poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'other';
-                        const colors: Record<string, string> = {
-                            'restaurant': '#ff6b6b',
-                            'cafe': '#feca57',
-                            'bar': '#ff9ff3',
-                            'fast_food': '#ff7675',
-                            'hotel': '#74b9ff',
-                            'mall': '#a29bfe',
-                            'supermarket': '#fd79a8',
-                            'park': '#00b894',
-                            'cinema': '#e17055',
-                            'museum': '#fdcb6e',
-                            'other': '#636e72'
-                        };
-                        
-                        return L.divIcon({
-                            className: 'poi-marker',
-                            html: `<div style="background:${colors[amenity] || colors.other};width:12px;height:12px;border-radius:50%;border:1px solid white"></div>`,
-                            iconSize: [12, 12],
-                            iconAnchor: [6, 6],
-                        });
-                    };
+                if (pois.length > 0) {
+                    pois.forEach((poi) => {
+                        const getPoiIcon = (poi: POI) => {
+                            const amenity = poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'other';
+                            const colors: Record<string, string> = {
+                                'restaurant': '#ff6b6b',
+                                'cafe': '#feca57',
+                                'bar': '#ff9ff3',
+                                'fast_food': '#ff7675',
+                                'hotel': '#74b9ff',
+                                'mall': '#a29bfe',
+                                'supermarket': '#fd79a8',
+                                'park': '#00b894',
+                                'cinema': '#e17055',
+                                'museum': '#fdcb6e',
+                                'other': '#636e72'
+                            };
 
-                    const distance = calculateDistance(centroid.lat, centroid.lot, poi.lat, poi.lon);
-                    const poiMarker = L.marker([poi.lat, poi.lon], { icon: getPoiIcon(poi) })
-                        .addTo(map)
-                        .bindPopup(`
-                            <div>
-                                <strong>${poi.name}</strong><br/>
-                                <strong>Type:</strong> ${poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'Other'}<br/>
-                                <strong>Distance:</strong> ${(distance / 1000).toFixed(2)} km from center
-                            </div>
-                        `);
-                    markers.push(poiMarker);
-                });
+                            return L.divIcon({
+                                className: 'poi-marker',
+                                html: `<div style="background:${colors[amenity] || colors.other};width:12px;height:12px;border-radius:50%;border:1px solid white"></div>`,
+                                iconSize: [12, 12],
+                                iconAnchor: [6, 6],
+                            });
+                        };
+
+                        const distance = calculateDistance(centroid.lat, centroid.lot, poi.lat, poi.lon);
+                        const poiMarker = L.marker([poi.lat, poi.lon], { icon: getPoiIcon(poi) })
+                            .addTo(map)
+                            .bindPopup(`
+                                <div>
+                                    <strong>${poi.name}</strong><br/>
+                                    <strong>Type:</strong> ${poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'Other'}<br/>
+                                    <strong>Distance:</strong> ${(distance / 1000).toFixed(2)} km from center
+                                </div>
+                            `);
+                        markers.push(poiMarker);
+                    });
+                }
 
                 const circle = L.circle([centroid.lat, centroid.lot], {
                     radius: radiusMeters,
@@ -178,16 +181,16 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                 console.error('Error cleaning up map:', error);
             }
         };
-    }, [mounted, locations, pois, centroid]);
+    }, [mounted, locations, pois, centroid, poisLoading]);
 
     if (!mounted) {
         return (
-            <div 
-                style={{ 
-                    height: "400px", 
-                    width: "100%", 
-                    display: "flex", 
-                    alignItems: "center", 
+            <div
+                style={{
+                    height: "400px",
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
                     justifyContent: "center",
                     backgroundColor: "#f0f0f0",
                     border: "1px solid #ddd",
@@ -199,19 +202,36 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
         );
     }
 
+    if (poisLoading && centroid) {
+        return (
+            <div
+                className="flex flex-col items-center justify-center bg-background rounded-lg"
+                style={{ height: "650px" }}
+            >
+                <FourSquare
+                    size="medium"
+                    color="currentColor"
+                    text=""
+                    textColor=""
+                    style={{ color: "var(--foreground)" }}
+                />
+                <div className="text-sm font-medium text-gray-700 mb-1" color="currentColor" style={{ color: "var(--foreground)" }}>
+                    Finding Meeting Place For You
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div>
-            <div className="mb-2 text-sm text-gray-600">
-                Found {locations.length} user location(s) and {poisLoading ? "Loading..." : `${pois.length} POIs`} within 2km radius
-            </div>
-            <div 
-                id="map" 
-                style={{ 
+            <div
+                id="map"
+                style={{
                     height: "600px",
                     width: "100%",
                     borderRadius: "8px",
                     overflow: "hidden"
-                }} 
+                }}
             />
             <div className="mt-2 flex gap-4 text-xs flex-wrap">
                 <div className="flex items-center gap-1">
@@ -250,12 +270,12 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
 export default dynamic(() => Promise.resolve(MapComponent), {
     ssr: false,
     loading: () => (
-        <div 
-            style={{ 
-                height: "500px", 
-                width: "100%", 
-                display: "flex", 
-                alignItems: "center", 
+        <div
+            style={{
+                height: "500px",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
                 justifyContent: "center",
                 backgroundColor: "#f0f0f0",
                 border: "1px solid #ddd",

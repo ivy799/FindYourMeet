@@ -10,6 +10,8 @@ import { toast } from "sonner"
 import { Badge } from "./ui/badge"
 import { ScrollArea } from "./ui/scroll-area"
 import type { POI } from "@/hooks/use-poi"
+import { FourSquare } from "react-loading-indicators";
+
 
 interface sideBarRightProps extends React.ComponentProps<typeof Sidebar> {
   roomCode?: number
@@ -154,8 +156,8 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
               variant="secondary"
               size="icon"
               className={`size-9 rounded-md border transition-all duration-200 ${isCopied
-                  ? 'border-green-300 bg-green-100 text-green-700 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400'
-                  : 'border-sidebar-border bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80'
+                ? 'border-green-300 bg-green-100 text-green-700 hover:bg-green-200 dark:border-green-700 dark:bg-green-900/30 dark:text-green-400'
+                : 'border-sidebar-border bg-sidebar-accent text-sidebar-foreground hover:bg-sidebar-accent/80'
                 }`}
               onClick={handleCopyRoomCode}
               disabled={!roomCode}
@@ -179,7 +181,7 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
 
       <SidebarContent className="px-4">
         <div className="space-y-4">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pt-3">
             <MapPin className="size-4 text-sidebar-foreground/60" />
             <h3 className="text-sm font-semibold text-sidebar-foreground">
               Nearby Places
@@ -195,7 +197,13 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
             </div>
           ) : pois.length === 0 ? (
             <div className="text-center p-8 text-sidebar-foreground/60 text-sm">
-              No places found within 2km radius
+              <FourSquare
+                size="small"
+                color="currentColor"
+                text=""
+                textColor=""
+                style={{ color: "var(--foreground)" }}
+              />
             </div>
           ) : (
             <ScrollArea className="h-[calc(100vh-280px)]">
@@ -207,15 +215,15 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
                       <h4 className="text-xs font-medium text-sidebar-foreground/80 uppercase tracking-wider">
                         {getCategoryDisplayName(category)}
                       </h4>
-                      <Badge 
-                        variant="outline" 
+                      <Badge
+                        variant="outline"
                         className="ml-auto text-xs"
                         style={{ borderColor: POITypeIcons[category]?.color || '#636e72' }}
                       >
                         {categoryPOIs.length}
                       </Badge>
                     </div>
-                    
+
                     <div className="space-y-1">
                       {categoryPOIs.slice(0, 5).map((poi) => (
                         <div
@@ -234,14 +242,14 @@ export function SidebarRight({ roomCode, ownerName, ownerImage, pois = [], poisL
                                 </span>
                               </div>
                             </div>
-                            <div 
+                            <div
                               className="size-3 rounded-full border border-white shadow-sm flex-shrink-0"
                               style={{ backgroundColor: POITypeIcons[category]?.color || '#636e72' }}
                             />
                           </div>
                         </div>
                       ))}
-                      
+
                       {categoryPOIs.length > 5 && (
                         <div className="text-xs text-sidebar-foreground/60 text-center p-2">
                           +{categoryPOIs.length - 5} more places

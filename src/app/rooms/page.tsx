@@ -380,8 +380,7 @@ export default function Page() {
                       </DialogHeader>
 
                       <div className="grid gap-4">
-                        <div className="grid gap-3">
-                          <Label htmlFor="name-1">Name</Label>
+                        <div className="grid gap-3 py-3">
                           <Input
                             id="name-1"
                             placeholder="Room Name"

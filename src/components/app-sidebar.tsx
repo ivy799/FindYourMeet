@@ -7,9 +7,6 @@ import { Calendar } from "./ui/calendar"
 import {
   Sidebar,
   SidebarContent,
-  SidebarHeader,
-  SidebarRail,
-  SidebarSeparator,
 } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
 import {
@@ -26,6 +23,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useUser } from "@clerk/nextjs"
 import { useState, useEffect } from "react"
+import { BlinkBlur } from "react-loading-indicators";
 
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -112,7 +110,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <Dialog>
               <div className="flex flex-row items-center w-full justify-between">
                 <span className="text-base font-medium text-foreground break-words max-w-[140px]">
-                  {address || <span className="text-muted-foreground italic">No address set</span>}
+                  {address || <BlinkBlur
+                    size="small"
+                    color="currentColor"
+                    text=""
+                    textColor=""
+                    speedPlus={2}
+                    style={{ color: "var(--foreground)" }} />}
                 </span>
                 <DialogTrigger asChild>
                   <Button
