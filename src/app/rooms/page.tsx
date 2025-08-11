@@ -25,7 +25,6 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import {
   InputOTP,
   InputOTPGroup,
@@ -45,17 +44,23 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { FourSquare } from "react-loading-indicators";
+import { Loader } from "lucide-react"
+import { Loader2Icon } from "lucide-react"
+import { useRouter } from "next/navigation"
+
 
 
 export default function Page() {
   const { user } = useUser()
+  const router = useRouter()
   const [rooms, setRoom] = useState([]);
   const [joinedRoom, setJoinedRoom] = useState([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
-
   const [isLoadingRooms, setIsLoadingRooms] = useState(true)
   const [isLoadingJoinedRooms, setIsLoadingJoinedRooms] = useState(true)
+  const [isMakeRoomButtonLoading, setIsMakeRoomButtonLoading] = useState(false)
+  const [isJoinRoomButtonLoading, setIsJoinRoomButtonLoading] = useState(false)
 
   const isLoading = isLoadingRooms || isLoadingJoinedRooms
 
@@ -206,6 +211,8 @@ export default function Page() {
       const dataUserRoom = await roomUserRes.json();
       console.log("User added to room:", dataUserRoom);
 
+      return room.id
+
     } catch (error) {
       console.error('Error creating room:', error);
     }
@@ -264,8 +271,7 @@ export default function Page() {
       }
       const newUserRoomFix = await makeNewRoomUser.json()
       console.log(newUserRoomFix)
-
-
+      return fixRoom.id
     } catch (error) {
     }
   }
@@ -301,6 +307,7 @@ export default function Page() {
     const isAddressValid = await checkAddress()
     if (isAddressValid) {
       setIsCreateDialogOpen(true)
+      setIsMakeRoomButtonLoading(false)
     }
   }
 
@@ -308,7 +315,12 @@ export default function Page() {
     const isAddressValid = await checkAddress()
     if (isAddressValid) {
       setIsJoinDialogOpen(true)
+      setIsJoinRoomButtonLoading(false)
     }
+  }
+
+  const handleGoToRoom = (id: number) => {
+    router.push(`/rooms/${id}`)
   }
 
   if (isLoading) {
@@ -324,6 +336,7 @@ export default function Page() {
       </div>
     )
   }
+
 
   return (
     <SidebarProvider>
@@ -352,12 +365,19 @@ export default function Page() {
               <div className="flex flex-wrap items-center gap-4 text-sm">
                 <Button
                   type="button"
+                  disabled={isMakeRoomButtonLoading}
                   variant="outline"
                   aria-label="Open create room dialog"
-                  className="relative overflow-hidden transition-all duration-200 ease-out border-foreground/25 hover:border-foreground/50 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
-                  onClick={handleCreateRoomClick}
+                  className={`relative overflow-hidden transition-all duration-200 ease-out border-foreground/25 hover:border-foreground/50 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] data-[state=open]:ring-2 data-[state=open]:ring-foreground/40`}
+                  onClick={() => {
+                    setIsMakeRoomButtonLoading(true)
+                    handleCreateRoomClick()
+                  }}
                 >
                   <span className="pointer-events-none">Make Room</span>
+                  {isMakeRoomButtonLoading && (
+                    <Loader2Icon className="animate-spin" />
+                  )}
                 </Button>
 
                 <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -367,9 +387,9 @@ export default function Page() {
                         e.preventDefault();
                         const formData = new FormData(e.currentTarget);
                         const name = formData.get("name") as string;
-                        await makeRoom(name);
+                        const room_id = await makeRoom(name);
                         setIsCreateDialogOpen(false);
-
+                        handleGoToRoom(room_id)
                       }}
                     >
                       <DialogHeader>
@@ -419,10 +439,17 @@ export default function Page() {
                 </div>
                 <Button
                   aria-label="Open join room dialog"
+                  disabled={isJoinRoomButtonLoading}
                   className="transition-all duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] border-foreground/25 hover:border-foreground/50 data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
-                  onClick={handleJoinRoomClick}
+                  onClick={() => {
+                    setIsJoinRoomButtonLoading(true)
+                    handleJoinRoomClick()
+                  }}
                 >
                   Join Room
+                  {isJoinRoomButtonLoading && (
+                    <Loader2Icon className="animate-spin" />
+                  )}
                 </Button>
                 <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
                   <DialogContent className="sm:max-w-[425px] bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur border border-foreground/10 shadow-lg">
@@ -433,8 +460,9 @@ export default function Page() {
                         const roomCodeStr = formData.get("roomCode") as string;
                         const roomCode = Number(roomCodeStr);
                         console.log(roomCode);
-                        await joinRoom(roomCode);
+                        const roomId = await joinRoom(roomCode);
                         setIsJoinDialogOpen(false)
+                        handleGoToRoom(roomId)
                       }}
                     >
                       <DialogHeader>

@@ -18,7 +18,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarSeparator
 } from "@/components/ui/sidebar"
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
