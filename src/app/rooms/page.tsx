@@ -43,15 +43,25 @@ import {
 import { ChevronRightIcon } from "lucide-react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
+import { toast } from "sonner"
+import { FourSquare } from "react-loading-indicators";
 
 
 export default function Page() {
   const { user } = useUser()
   const [rooms, setRoom] = useState([]);
   const [joinedRoom, setJoinedRoom] = useState([])
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
+
+  const [isLoadingRooms, setIsLoadingRooms] = useState(true)
+  const [isLoadingJoinedRooms, setIsLoadingJoinedRooms] = useState(true)
+
+  const isLoading = isLoadingRooms || isLoadingJoinedRooms
 
   useEffect(() => {
     const fetchUserAndRooms = async () => {
+      setIsLoadingRooms(true)
       try {
         const userRes = await fetch('/api/user', {
           method: 'GET',
@@ -81,6 +91,8 @@ export default function Page() {
         setRoom(roomsData);
       } catch (error) {
         console.error("Error fetching data:", error);
+      } finally {
+        setIsLoadingRooms(false)
       }
     };
 
@@ -89,6 +101,7 @@ export default function Page() {
 
   useEffect(() => {
     const fetchJoinedRoom = async () => {
+      setIsLoadingJoinedRooms(true)
       try {
 
         const userRes = await fetch('/api/user', {
@@ -114,7 +127,9 @@ export default function Page() {
         const fixJoinedRoom = await joinedRoom.json()
         setJoinedRoom(fixJoinedRoom)
       } catch (error) {
-
+        console.log("error fetching data")
+      } finally {
+        setIsLoadingJoinedRooms(false)
       }
     }
 
@@ -252,8 +267,62 @@ export default function Page() {
 
 
     } catch (error) {
-
     }
+  }
+
+  const checkAddress = async () => {
+    if (!user) {
+      console.error('User not authenticated or name is empty');
+      return;
+    }
+
+    try {
+      const checkUserAddress = await fetch('/api/user_detail', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const checkUserAddressRes = await checkUserAddress.json()
+
+      if (!checkUserAddressRes || !checkUserAddressRes.address) {
+        toast('Please set your address first before create a room!');
+        return false;
+      }
+
+      return true
+    } catch (error) {
+      return false
+    }
+  }
+
+  const handleCreateRoomClick = async () => {
+    const isAddressValid = await checkAddress()
+    if (isAddressValid) {
+      setIsCreateDialogOpen(true)
+    }
+  }
+
+  const handleJoinRoomClick = async () => {
+    const isAddressValid = await checkAddress()
+    if (isAddressValid) {
+      setIsJoinDialogOpen(true)
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <FourSquare
+          color="currentColor"
+          size="medium"
+          text=""
+          textColor=""
+          style={{ color: "var(--foreground)" }}
+        />
+      </div>
+    )
   }
 
   return (
@@ -281,18 +350,17 @@ export default function Page() {
           <div className="grid auto-rows-min gap-4 md:grid-cols-1">
             <div className="aspect-[32/9] rounded-xl border border-foreground/10 bg-muted/40 shadow-sm dark:bg-muted/30 flex items-center justify-center p-4 md:p-6">
               <div className="flex flex-wrap items-center gap-4 text-sm">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      aria-label="Open create room dialog"
-                      className="relative overflow-hidden transition-all duration-200 ease-out border-foreground/25 hover:border-foreground/50 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
-                    >
-                      <span className="pointer-events-none">Make Room</span>
-                    </Button>
-                  </DialogTrigger>
+                <Button
+                  type="button"
+                  variant="outline"
+                  aria-label="Open create room dialog"
+                  className="relative overflow-hidden transition-all duration-200 ease-out border-foreground/25 hover:border-foreground/50 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
+                  onClick={handleCreateRoomClick}
+                >
+                  <span className="pointer-events-none">Make Room</span>
+                </Button>
 
+                <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
                   <DialogContent className="sm:max-w-[425px] bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur border border-foreground/10 shadow-lg">
                     <form
                       onSubmit={async (e) => {
@@ -300,6 +368,8 @@ export default function Page() {
                         const formData = new FormData(e.currentTarget);
                         const name = formData.get("name") as string;
                         await makeRoom(name);
+                        setIsCreateDialogOpen(false);
+
                       }}
                     >
                       <DialogHeader>
@@ -348,17 +418,14 @@ export default function Page() {
                   <span className="text-xs font-semibold text-muted-foreground select-none">or</span>
                   <span className="h-px flex-1 bg-foreground/10 dark:bg-foreground/20" />
                 </div>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button
-                      aria-label="Open join room dialog"
-                      className="transition-all duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] border-foreground/25 hover:border-foreground/50 data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
-                    >
-                      Join Room
-                    </Button>
-                  </DialogTrigger>
-
+                <Button
+                  aria-label="Open join room dialog"
+                  className="transition-all duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98] border-foreground/25 hover:border-foreground/50 data-[state=open]:ring-2 data-[state=open]:ring-foreground/40"
+                  onClick={handleJoinRoomClick}
+                >
+                  Join Room
+                </Button>
+                <Dialog open={isJoinDialogOpen} onOpenChange={setIsJoinDialogOpen}>
                   <DialogContent className="sm:max-w-[425px] bg-background/95 supports-[backdrop-filter]:bg-background/80 backdrop-blur border border-foreground/10 shadow-lg">
                     <form
                       onSubmit={async (e) => {
@@ -368,6 +435,7 @@ export default function Page() {
                         const roomCode = Number(roomCodeStr);
                         console.log(roomCode);
                         await joinRoom(roomCode);
+                        setIsJoinDialogOpen(false)
                       }}
                     >
                       <DialogHeader>
@@ -523,36 +591,36 @@ export default function Page() {
                   key={joinedRoom.room.id}
                 >
                   <CardHeader className="pb-2">
-                  <div className="flex items-center gap-3">
-                    <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
-                      <circle cx="12" cy="12" r="10" />
-                      <path d="M8 12h8M12 8v8" />
-                    </svg>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+                          <circle cx="12" cy="12" r="10" />
+                          <path d="M8 12h8M12 8v8" />
+                        </svg>
+                      </div>
+                      <div>
+                        <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {joinedRoom.room.name}
+                        </CardTitle>
+                        <CardDescription className="text-xs mt-1 text-muted-foreground">
+                          Kode: <span className="font-mono tracking-wider">{joinedRoom.room.code}</span>
+                        </CardDescription>
+                      </div>
                     </div>
-                    <div>
-                    <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {joinedRoom.room.name}
-                    </CardTitle>
-                    <CardDescription className="text-xs mt-1 text-muted-foreground">
-                      Kode: <span className="font-mono tracking-wider">{joinedRoom.room.code}</span>
-                    </CardDescription>
-                    </div>
-                  </div>
                   </CardHeader>
                   <CardFooter className="flex-col gap-2 pt-0">
-                  <Link href={`/rooms/${joinedRoom.room.id}`}>
-                    <Button
-                    type="button"
-                    className="w-full flex items-center justify-between"
-                    variant="outline"
-                    onMouseEnter={e => e.currentTarget.classList.add('ring-2', 'ring-primary')}
-                    onMouseLeave={e => e.currentTarget.classList.remove('ring-2', 'ring-primary')}
-                    >
-                    <span>See Detail</span>
-                    <ChevronRightIcon className="ml-2 transition-transform group-hover:translate-x-1" />
-                    </Button>
-                  </Link>
+                    <Link href={`/rooms/${joinedRoom.room.id}`}>
+                      <Button
+                        type="button"
+                        className="w-full flex items-center justify-between"
+                        variant="outline"
+                        onMouseEnter={e => e.currentTarget.classList.add('ring-2', 'ring-primary')}
+                        onMouseLeave={e => e.currentTarget.classList.remove('ring-2', 'ring-primary')}
+                      >
+                        <span>See Detail</span>
+                        <ChevronRightIcon className="ml-2 transition-transform group-hover:translate-x-1" />
+                      </Button>
+                    </Link>
                   </CardFooter>
                 </Card>
               ))

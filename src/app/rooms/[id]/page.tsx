@@ -18,6 +18,7 @@ import MapComponent from "@/components/map"
 import { useState, useEffect } from "react"
 import { useUser } from "@clerk/nextjs"
 import type { POI } from "@/hooks/use-poi"
+import { FourSquare } from "react-loading-indicators"; 
 
 interface PageProps {
     params: Promise<{ id: string }>
@@ -93,8 +94,14 @@ export default function Page({ params }: PageProps) {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="flex items-center justify-center min-h-screen bg-background">
+                <FourSquare
+                    color="currentColor"
+                    size="medium"
+                    text=""
+                    textColor=""
+                    style={{ color: "var(--foreground)" }}
+                />
             </div>
         )
     }
