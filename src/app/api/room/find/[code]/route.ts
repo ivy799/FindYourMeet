@@ -23,7 +23,15 @@ export async function GET(
     }
 
     const roomByCode = await prisma.room.findUnique({
-      where: { code: roomCode }
+      where: { code: roomCode },
+      include: {
+        room_user: {
+          include: {
+            user: true
+          }
+        },
+        owner: true
+      }
     });
 
     if (!roomByCode) {

@@ -23,6 +23,7 @@ import * as React from "react"
 import Link from "next/link"
 import { ModeToggle } from '@/components/mode-toggle'
 import { Menu } from 'lucide-react'
+import { ModernLogo } from "./ui/modern-logo";
 
 export function Navbar() {
     const [isOpen, setIsOpen] = React.useState(false)
@@ -32,10 +33,10 @@ export function Navbar() {
     return (
         <div className="fixed top-0 left-0 right-0 z-50 flex justify-between items-center p-4 h-16 bg-white/80 dark:bg-background/80 backdrop-blur-md border-b border-border transition-all duration-100">
             <div className="flex items-center space-x-2 sm:space-x-3">
-                <div className="relative w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-gray-900 to-gray-700 dark:from-white dark:to-gray-200 rounded-xl flex items-center justify-center shadow-lg">
-                    <svg className="w-4 h-4 sm:w-6 sm:h-6 text-white dark:text-gray-900" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M18.5 3H6c-1.1 0-2 .9-2 2v5.71c0 3.83 2.95 7.18 6.78 7.29 3.96.12 7.22-3.06 7.22-7v-1h.5c1.93 0 3.5-1.57 3.5-3.5S20.43 3 18.5 3zM16 5v3H6V5h10zm2.5 3H18V5h.5c.83 0 1.5.67 1.5 1.5S19.33 8 18.5 8z" />
-                    </svg>
+                <div className="p-1 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <div className="flex items-center justify-center h-8 w-8 bg-gray-50 dark:bg-gray-800 rounded">
+                        <ModernLogo className="h-6 w-6" />
+                    </div>
                 </div>
                 <span className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">FindYourMeet</span>
             </div>
@@ -63,13 +64,13 @@ export function Navbar() {
                                         </NavigationMenuLink>
                                     </li>
                                     <ListItem href="/rooms" title="Browse Rooms">
-                                        Explore available meeting rooms and spaces.
+                                        Create and Explore available rooms.
                                     </ListItem>
-                                    <ListItem href="/booking" title="Book Now">
-                                        Reserve your ideal meeting space instantly.
-                                    </ListItem>
-                                    <ListItem href="/help" title="Help Center">
+                                    <ListItem href="/" title="Help Center">
                                         Get support and find answers to your questions.
+                                    </ListItem>
+                                    <ListItem href="/" title="Contact">
+                                        Reach out to us for partnership, feedback, or any inquiries. We're here to help!
                                     </ListItem>
                                 </ul>
                             </NavigationMenuContent>
@@ -122,29 +123,29 @@ export function Navbar() {
                         </VisuallyHidden>
                         <div className="flex flex-col space-y-4 mt-6">
                             <div className="flex flex-col space-y-3 p-5">
-                                <Link 
-                                    href="/" 
+                                <Link
+                                    href="/"
                                     className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                     onClick={closeSheet}
                                 >
                                     Home
                                 </Link>
-                                <Link 
-                                    href="/about" 
+                                <Link
+                                    href="/about"
                                     className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                     onClick={closeSheet}
                                 >
                                     About
                                 </Link>
-                                <Link 
-                                    href="/pricing" 
+                                <Link
+                                    href="/pricing"
                                     className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                     onClick={closeSheet}
                                 >
                                     Pricing
                                 </Link>
-                                <Link 
-                                    href="/service" 
+                                <Link
+                                    href="/service"
                                     className="text-lg font-medium text-gray-900 dark:text-white hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                                     onClick={closeSheet}
                                 >
@@ -191,7 +192,7 @@ function ListItem({
     return (
         <li {...props}>
             <NavigationMenuLink asChild>
-                <Link 
+                <Link
                     href={href}
                     className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
                 >

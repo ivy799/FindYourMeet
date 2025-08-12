@@ -255,8 +255,15 @@ export default function Page() {
         throw new Error("no room")
       }
       const fixRoom = await findRoom.json()
-      console.log(fixRoom)
 
+      // Check if user is already in the room
+      const isUserAlreadyInRoom = fixRoom.room_user.some((roomUser: any) => roomUser.user_id === userData.id);
+      if (isUserAlreadyInRoom) {
+        toast("You have already joined this room")
+        setIsJoinRoomButtonLoadingInDialog(false)
+        setIsJoinDialogOpen(false)
+        return null
+      }
 
       // create new user_room data
       const userAndRoomDetail = {
@@ -277,6 +284,7 @@ export default function Page() {
       console.log(newUserRoomFix)
       return fixRoom.id
     } catch (error) {
+
     }
   }
 
@@ -474,7 +482,9 @@ export default function Page() {
                         const roomId = await joinRoom(roomCode);
                         setIsJoinRoomButtonLoadingInDialog(false)
                         setIsJoinDialogOpen(false)
-                        handleGoToRoom(roomId)
+                        if (roomId !== null) {
+                          handleGoToRoom(roomId)
+                        }
                       }}
                     >
                       <DialogHeader>
