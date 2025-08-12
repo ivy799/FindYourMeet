@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react"
-import { Edit } from "lucide-react"
+import { Edit, Loader2Icon } from "lucide-react"
 
 import { Calendar } from "./ui/calendar"
 import {
@@ -27,17 +27,19 @@ import { useState, useEffect } from "react"
 import { BlinkBlur } from "react-loading-indicators";
 import { ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { user } = useUser()
   const [address, setAddress] = useState<string | undefined>()
   const [date, setDate] = React.useState<Date | undefined>(new Date())
+  const [isAddressUpdate, setIsAddressUpdate] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     const fetchUserDetail = async () => {
       try {
-
         const addUserDetail = await fetch('/api/user_detail', {
           method: "GET",
           headers: {
@@ -52,7 +54,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
         setAddress(userDetail.address)
       } catch (error) {
-
+        console.error("Error fetching user detail:", error)
       }
     };
     fetchUserDetail();
@@ -92,13 +94,74 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         body: JSON.stringify(userDetailData)
       })
 
-      const userDetail = await addUserDetail.json()
-      if (!userDetail) {
-        throw Error
+      if (!addUserDetail.ok) {
+        throw new Error('Failed to add address');
       }
 
+      const userDetail = await addUserDetail.json()
+      setAddress(address);
+      toast.success("Address added successfully");
     } catch (error) {
-      console.log("error adding address")
+      console.error("Error adding address:", error)
+      toast.error("Failed to add address");
+    }
+  }
+
+  const updateAddress = async (newAddress: string) => {
+    if (!user) {
+      console.error('User not authenticated');
+      return;
+    }
+
+    try {
+      const userRes = await fetch('/api/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!userRes.ok) {
+        const errorText = await userRes.text();
+        throw new Error(`Failed to get user: ${userRes.status} ${errorText}`);
+      }
+
+      const userData = await userRes.json();
+
+      const logedUserDetail = await fetch(`/api/user_detail/${userData.id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!logedUserDetail.ok) {
+        throw new Error('Failed to get user detail');
+      }
+
+      const logedUserDetailRes = await logedUserDetail.json();
+
+      const updateAddressRes = await fetch(`/api/user_detail/${logedUserDetailRes.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ newAddress }),
+      });
+
+      if (!updateAddressRes.ok) {
+        const errorData = await updateAddressRes.json();
+        throw new Error(errorData.error || 'Failed to update address');
+      }
+
+      const updatedAddress = await updateAddressRes.json();
+      console.log('Address updated successfully:', updatedAddress);
+
+      setAddress(newAddress);
+      toast.success("Address updated successfully");
+    } catch (error) {
+      console.error("Failed Update Address:", error);
+      toast.error(error instanceof Error ? error.message : 'Failed to update address');
     }
   }
 
@@ -132,7 +195,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="rounded-xl border border-sidebar-border bg-background/80 p-4 shadow transition-colors hover:bg-background/90 flex flex-col items-center justify-between">
             <div className="flex items-center gap-3">
             </div>
-            <Dialog>
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> {/* ✅ Control dialog with state */}
               <div className="flex flex-row items-center w-full justify-between">
                 <span className="text-base font-medium text-foreground break-words max-w-[140px]">
                   {address || <BlinkBlur
@@ -156,18 +219,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[400px] bg-background border border-sidebar-border rounded-xl shadow-xl">
                   <form
-                    action="submit"
                     onSubmit={async (e) => {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
                       const inputAddress = formData.get("address") as string;
-                      await addAddress(inputAddress);
+                      
+                      if (!inputAddress.trim()) {
+                        toast.error("Please enter a valid address");
+                        return;
+                      }
+
+                      setIsAddressUpdate(true);
+
+                      try {
+                        if (address) {
+                          await updateAddress(inputAddress);
+                        } else {
+                          await addAddress(inputAddress);
+                        }
+                        
+                        setIsDialogOpen(false);
+                      } catch (error) {
+                        console.error("Error updating/adding address:", error);
+                      } finally {
+                        setIsAddressUpdate(false);
+                      }
                     }}
                   >
                     <DialogHeader>
-                      <DialogTitle className="text-lg font-semibold">Edit Address</DialogTitle>
+                      <DialogTitle className="text-lg font-semibold">
+                        {address ? "Edit Address" : "Add Address"}
+                      </DialogTitle>
                       <DialogDescription className="text-sm text-muted-foreground">
-                        Update your address below and click save.
+                        {address ? "Update your address below and click save." : "Enter your address below and click save."}
                       </DialogDescription>
                     </DialogHeader>
                     <div className="mt-4 grid gap-3">
@@ -181,16 +265,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         className="h-10 bg-background border border-input rounded-md px-3 text-foreground"
                         defaultValue={address}
                         autoComplete="off"
+                        disabled={isAddressUpdate}
+                        required
                       />
                     </div>
                     <DialogFooter className="mt-6 flex gap-2">
-                      <DialogClose asChild>
-                        <Button variant="outline" className="w-24">
-                          Cancel
-                        </Button>
-                      </DialogClose>
-                      <Button type="submit" className="w-32 shadow-sm">
-                        Save changes
+                      <Button 
+                        type="button"
+                        variant="outline" 
+                        className="w-24"
+                        onClick={() => setIsDialogOpen(false)}
+                        disabled={isAddressUpdate}
+                      >
+                        Cancel
+                      </Button>
+                      <Button 
+                        type="submit" 
+                        className="w-32 shadow-sm"
+                        disabled={isAddressUpdate}
+                      >
+                        {isAddressUpdate ? (
+                          <>
+                            <Loader2Icon className="animate-spin h-4 w-4 mr-2" />
+                            {address ? "Updating..." : "Adding..."}
+                          </>
+                        ) : (
+                          <>Save changes</>
+                        )}
                       </Button>
                     </DialogFooter>
                   </form>

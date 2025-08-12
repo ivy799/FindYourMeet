@@ -7,6 +7,7 @@ import {
   LogOut,
   Search,
   Trash2,
+  Loader2,
 } from "lucide-react"
 import {
   Avatar,
@@ -38,7 +39,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { NextResponse } from "next/server"
+import { toast } from "sonner"
 
 
 interface roomUser {
@@ -63,14 +64,16 @@ interface sideBarLeftProps extends React.ComponentProps<typeof Sidebar> {
 }
 
 export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps) {
-
   const [searchQuery, setSearchQuery] = useState('')
   const [user, setUser] = useState<{ id: number } | null>(null)
+  const [isButtonLoading, setIsButtonLoading] = useState(false)
+  const [isUserLoading, setIsUserLoading] = useState(true)
   const router = useRouter()
 
   React.useEffect(() => {
     const getUserLogged = async () => {
       try {
+        setIsUserLoading(true)
         const userRes = await fetch('/api/user', {
           method: 'GET',
           headers: {
@@ -86,6 +89,9 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
         setUser(user)
       } catch (error) {
         console.log("unauthorized")
+        setUser(null)
+      } finally {
+        setIsUserLoading(false)
       }
     }
 
@@ -141,19 +147,8 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
 
   const outRoom = async (room_id: number) => {
     try {
-      const userRes = await fetch('/api/user', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!userRes.ok) {
-        throw new Error("Failed to fetch user");
-      }
-
-      await userRes.json();
-
+      setIsButtonLoading(true)
+      
       const outRoom = await fetch(`/api/room_user/${room_id}`, {
         method: 'DELETE',
         headers: {
@@ -161,16 +156,26 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
         },
       })
 
+      if (!outRoom.ok) {
+        throw new Error('Failed to leave room')
+      }
+
       const isOutRoom = await outRoom.json()
       console.log(isOutRoom)
+      toast.success("Successfully left the room")
       router.push('/rooms')
     } catch (error) {
-
+      console.error('Error leaving room:', error)
+      toast.error('Failed to leave room')
+    } finally {
+      setIsButtonLoading(false)
     }
   }
 
   const deleteRoom = async (room_id: number) => {
     try {
+      setIsButtonLoading(true)
+      
       if (user?.id === roomOwner) {
         const deleteRoom = await fetch(`/api/room/${room_id}`, {
           method: 'DELETE',
@@ -179,14 +184,22 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
           },
         })
 
+        if (!deleteRoom.ok) {
+          throw new Error('Failed to delete room')
+        }
+
         const isDeleteRoom = await deleteRoom.json()
         console.log(isDeleteRoom)
+        toast.success("Room deleted successfully")
         router.push('/rooms')
       } else {
-        throw Error
+        throw new Error("Unauthorized: Only room owner can delete room")
       }
     } catch (error) {
-      console.log('Error deleting room')
+      console.error('Error deleting room:', error)
+      toast.error(error instanceof Error ? error.message : 'Failed to delete room')
+    } finally {
+      setIsButtonLoading(false)
     }
   }
 
@@ -330,10 +343,31 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
           </div>
         </SidebarContent>
         <SidebarFooter>
-          {user?.id === roomOwner ? (
+          {isUserLoading ? (
+            <Button disabled className="cursor-not-allowed">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Loading...
+            </Button>
+          ) : user?.id === roomOwner ? (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="cursor-pointer"><Trash2 />Delete Room</Button>
+                <Button 
+                  variant="destructive" 
+                  className="cursor-pointer" 
+                  disabled={isButtonLoading}
+                >
+                  {isButtonLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Room
+                    </>
+                  )}
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
@@ -343,26 +377,74 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => deleteRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><Trash2 />Delete Room</AlertDialogAction>
+                  <AlertDialogCancel disabled={isButtonLoading}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => deleteRoom(roomUser?.[0]?.room_id || 0)} 
+                    className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isButtonLoading}
+                  >
+                    {isButtonLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Deleting...
+                      </>
+                    ) : (
+                      <>
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete Room
+                      </>
+                    )}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
           ) : (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive" className="cursor-pointer"><LogInIcon className="rotate-180" />Exit Room</Button>
+                <Button 
+                  variant="destructive" 
+                  className="cursor-pointer" 
+                  disabled={isButtonLoading}
+                >
+                  {isButtonLoading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Leaving...
+                    </>
+                  ) : (
+                    <>
+                      <LogInIcon className="h-4 w-4 mr-2 rotate-180" />
+                      Exit Room
+                    </>
+                  )}
+                </Button>
               </AlertDialogTrigger>
               <AlertDialogContent>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. you will leave the room
+                    This action cannot be undone. You will leave the room.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={() => outRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><LogOut />Out Room</AlertDialogAction>
+                  <AlertDialogCancel disabled={isButtonLoading}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={() => outRoom(roomUser?.[0]?.room_id || 0)} 
+                    className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    disabled={isButtonLoading}
+                  >
+                    {isButtonLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Leaving...
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="h-4 w-4 mr-2" />
+                        Leave Room
+                      </>
+                    )}
+                  </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

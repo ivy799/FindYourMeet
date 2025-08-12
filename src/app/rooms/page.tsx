@@ -61,6 +61,9 @@ export default function Page() {
   const [isLoadingJoinedRooms, setIsLoadingJoinedRooms] = useState(true)
   const [isMakeRoomButtonLoading, setIsMakeRoomButtonLoading] = useState(false)
   const [isJoinRoomButtonLoading, setIsJoinRoomButtonLoading] = useState(false)
+  const [isMakeRoomButtonLoadingInDialog, setIsMakeRoomButtonLoadingInDialog] = useState(false)
+  const [isJoinRoomButtonLoadingInDialog, setIsJoinRoomButtonLoadingInDialog] = useState(false)
+
 
   const isLoading = isLoadingRooms || isLoadingJoinedRooms
 
@@ -389,6 +392,7 @@ export default function Page() {
                         const formData = new FormData(e.currentTarget);
                         const name = formData.get("name") as string;
                         const room_id = await makeRoom(name);
+                        setIsMakeRoomButtonLoadingInDialog(false)
                         setIsCreateDialogOpen(false);
                         handleGoToRoom(room_id)
                       }}
@@ -425,8 +429,12 @@ export default function Page() {
                         <Button
                           type="submit"
                           className="transition-all duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98]"
+                          onClick={() => setIsMakeRoomButtonLoadingInDialog(true)}
                         >
                           Create Room
+                          {isMakeRoomButtonLoadingInDialog && (
+                            <Loader2Icon className="animate-spin" />
+                          )}
                         </Button>
                       </DialogFooter>
                     </form>
@@ -462,6 +470,7 @@ export default function Page() {
                         const roomCode = Number(roomCodeStr);
                         console.log(roomCode);
                         const roomId = await joinRoom(roomCode);
+                        setIsJoinRoomButtonLoadingInDialog(false)
                         setIsJoinDialogOpen(false)
                         handleGoToRoom(roomId)
                       }}
@@ -513,8 +522,12 @@ export default function Page() {
                         <Button
                           type="submit"
                           className="transition-all duration-200 ease-out hover:opacity-90 focus-visible:ring-2 focus-visible:ring-foreground/40 active:scale-[0.98]"
+                          onClick={() => setIsJoinRoomButtonLoadingInDialog(true)}
                         >
                           Join Room
+                          {isJoinRoomButtonLoadingInDialog && (
+                            <Loader2Icon className="animate-spin" />
+                          )}
                         </Button>
                       </DialogFooter>
                     </form>
