@@ -3,7 +3,9 @@
 import * as React from "react"
 import {
   Inbox,
+  LogOut,
   Search,
+  Trash2,
 } from "lucide-react"
 import {
   Avatar,
@@ -18,11 +20,24 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarFooter,
 } from "@/components/ui/sidebar"
 import { useState, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "./ui/button"
 import { ArrowLeft } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+
 
 interface roomUser {
   id: number
@@ -94,6 +109,36 @@ export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
 
   const handleBackToRooms = () => {
     router.push('/rooms')
+  }
+
+  const outRoom = async (room_id: number) => {
+    try {
+      const userRes = await fetch('/api/user', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!userRes.ok) {
+        throw new Error("Failed to fetch user");
+      }
+
+      await userRes.json();
+
+      const outRoom = await fetch(`/api/room_user/${room_id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const isOutRoom = await outRoom.json()
+      console.log(isOutRoom)
+      router.push('/rooms')
+    } catch (error) {
+
+    }
   }
 
   return (
@@ -235,6 +280,25 @@ export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
             </SidebarMenu>
           </div>
         </SidebarContent>
+        <SidebarFooter>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" className="cursor-pointer">Exit Room</Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. you will leave the room
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={() => outRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><LogOut />Out Room</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </SidebarFooter>
       </div>
     </Sidebar>
   )

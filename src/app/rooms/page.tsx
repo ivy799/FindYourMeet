@@ -44,7 +44,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { toast } from "sonner"
 import { FourSquare } from "react-loading-indicators";
-import { Loader } from "lucide-react"
 import { Loader2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
 
@@ -53,6 +52,7 @@ import { useRouter } from "next/navigation"
 export default function Page() {
   const { user } = useUser()
   const router = useRouter()
+  const [logedUser, setLogedUser] = useState<any>(null)
   const [rooms, setRoom] = useState([]);
   const [joinedRoom, setJoinedRoom] = useState([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
@@ -131,6 +131,7 @@ export default function Page() {
 
         const fixJoinedRoom = await joinedRoom.json()
         setJoinedRoom(fixJoinedRoom)
+        setLogedUser(userData)
       } catch (error) {
         console.log("error fetching data")
       } finally {
@@ -611,46 +612,55 @@ export default function Page() {
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-            {joinedRoom && joinedRoom.length > 0 ? (
-              joinedRoom.map((joinedRoom: any) => (
-                <Card
-                  className="w-full max-w-sm transition-transform hover:scale-[1.03] hover:shadow-xl border border-foreground/10 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-black group"
-                  key={joinedRoom.room.id}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center gap-3">
-                      <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
-                          <circle cx="12" cy="12" r="10" />
-                          <path d="M8 12h8M12 8v8" />
-                        </svg>
-                      </div>
-                      <div>
-                        <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {joinedRoom.room.name}
-                        </CardTitle>
-                        <CardDescription className="text-xs mt-1 text-muted-foreground">
-                          Kode: <span className="font-mono tracking-wider">{joinedRoom.room.code}</span>
-                        </CardDescription>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardFooter className="flex-col gap-2 pt-0">
-                    <Link href={`/rooms/${joinedRoom.room.id}`}>
-                      <Button
-                        type="button"
-                        className="w-full flex items-center justify-between"
-                        variant="outline"
-                        onMouseEnter={e => e.currentTarget.classList.add('ring-2', 'ring-primary')}
-                        onMouseLeave={e => e.currentTarget.classList.remove('ring-2', 'ring-primary')}
-                      >
-                        <span>See Detail</span>
-                        <ChevronRightIcon className="ml-2 transition-transform group-hover:translate-x-1" />
-                      </Button>
-                    </Link>
-                  </CardFooter>
-                </Card>
-              ))
+            {joinedRoom && joinedRoom.length > 0 && logedUser ? (
+              (() => {
+                const filteredRooms = joinedRoom.filter((joinedRoom: any) => joinedRoom.room?.owner_id !== logedUser?.id);
+                return filteredRooms.length > 0 ? (
+                  filteredRooms.map((joinedRoom: any) => (
+                    <Card
+                      className="w-full max-w-sm transition-transform hover:scale-[1.03] hover:shadow-xl border border-foreground/10 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-black group"
+                      key={joinedRoom.room.id}
+                    >
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" className="w-6 h-6">
+                              <circle cx="12" cy="12" r="10" />
+                              <path d="M8 12h8M12 8v8" />
+                            </svg>
+                          </div>
+                          <div>
+                            <CardTitle className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                              {joinedRoom.room.name}
+                            </CardTitle>
+                            <CardDescription className="text-xs mt-1 text-muted-foreground">
+                              Kode: <span className="font-mono tracking-wider">{joinedRoom.room.code}</span>
+                            </CardDescription>
+                          </div>
+                        </div>
+                      </CardHeader>
+                      <CardFooter className="flex-col gap-2 pt-0">
+                        <Link href={`/rooms/${joinedRoom.room.id}`}>
+                          <Button
+                            type="button"
+                            className="w-full flex items-center justify-between"
+                            variant="outline"
+                            onMouseEnter={e => e.currentTarget.classList.add('ring-2', 'ring-primary')}
+                            onMouseLeave={e => e.currentTarget.classList.remove('ring-2', 'ring-primary')}
+                          >
+                            <span>See Detail</span>
+                            <ChevronRightIcon className="ml-2 transition-transform group-hover:translate-x-1" />
+                          </Button>
+                        </Link>
+                      </CardFooter>
+                    </Card>
+                  ))
+                ) : (
+                  <div className="col-span-3 text-center text-muted-foreground">
+                    No rooms found.
+                  </div>
+                );
+              })()
             ) : (
               <div className="col-span-3 text-center text-muted-foreground">
                 No rooms found.
