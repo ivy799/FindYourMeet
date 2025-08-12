@@ -117,7 +117,7 @@ export default function Page({ params }: PageProps) {
 
     return (
         <SidebarProvider>
-            <SidebarLeft roomUser={safeRoomUser} />
+            <SidebarLeft roomUser={safeRoomUser} roomOwner={roomDetails?.owner?.id} />
             <SidebarInset>
                 <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center gap-2 border-b">
                     <div className="flex flex-1 items-center gap-2 px-3">

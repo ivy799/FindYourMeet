@@ -50,3 +50,40 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
+
+
+export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { userId } = await auth();
+
+    const { id } = await params
+
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+    const user = await prisma.user.findUnique({
+      where: { clerk_user_id: userId }
+    });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    const roomId = parseInt(id);
+
+    await prisma.room_user.deleteMany({
+      where: {
+        room_id: roomId
+      }
+    });
+
+    const deleteRoom = await prisma.room.delete({
+      where: {
+        id: roomId
+      }
+    })
+    return NextResponse.json(deleteRoom)
+  } catch (error) {
+    console.error("DELETE Error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+  }
+}

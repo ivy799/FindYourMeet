@@ -570,12 +570,12 @@ export default function Page() {
                     <Link href={`/rooms/${room.id}`}>
                       <Button
                         type="button"
-                        className="w-full flex items-center justify-between"
+                        className="w-full flex items-center justify-between cursor-pointer"
                         variant="outline"
                         onMouseEnter={e => e.currentTarget.classList.add('ring-2', 'ring-primary')}
                         onMouseLeave={e => e.currentTarget.classList.remove('ring-2', 'ring-primary')}
                       >
-                        <span>See Detail</span>
+                        <span>See Details</span>
                         <ChevronRightIcon className="ml-2 transition-transform group-hover:translate-x-1" />
                       </Button>
                     </Link>
@@ -583,8 +583,39 @@ export default function Page() {
                 </Card>
               ))
             ) : (
-              <div className="col-span-3 text-center text-muted-foreground">
-                No rooms found.
+              <div className="col-span-3 flex flex-col items-center justify-center p-12 space-y-6">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20">
+                    <svg
+                      width="32"
+                      height="32"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-muted-foreground/60"
+                    >
+                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                      <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" />
+                      <circle cx="12" cy="11" r="2" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/60">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-lg font-semibold text-foreground">No Created Rooms</h3>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    You haven't create any rooms yet. Create a new room to get started.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
+                  <div className="h-px w-8 bg-gradient-to-r from-transparent to-muted-foreground/20"></div>
+                  <span className="font-medium">Start exploring</span>
+                  <div className="h-px w-8 bg-gradient-to-l from-transparent to-muted-foreground/20"></div>
+                </div>
               </div>
             )}
           </div>
@@ -656,14 +687,76 @@ export default function Page() {
                     </Card>
                   ))
                 ) : (
-                  <div className="col-span-3 text-center text-muted-foreground">
-                    No rooms found.
+                  <div className="col-span-3 flex flex-col items-center justify-center p-12 space-y-6">
+                    <div className="relative">
+                      <div className="w-24 h-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20">
+                        <svg
+                          width="32"
+                          height="32"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          className="text-muted-foreground/60"
+                        >
+                          <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                          <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" />
+                          <circle cx="12" cy="11" r="2" />
+                        </svg>
+                      </div>
+                      <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center">
+                        <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/60">
+                          <path d="M6 9l6 6 6-6" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <h3 className="text-lg font-semibold text-foreground">No Joined Rooms</h3>
+                      <p className="text-sm text-muted-foreground max-w-md">
+                        You haven't joined any rooms yet. join an existing one to get started.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
+                      <div className="h-px w-8 bg-gradient-to-r from-transparent to-muted-foreground/20"></div>
+                      <span className="font-medium">Start exploring</span>
+                      <div className="h-px w-8 bg-gradient-to-l from-transparent to-muted-foreground/20"></div>
+                    </div>
                   </div>
                 );
               })()
             ) : (
-              <div className="col-span-3 text-center text-muted-foreground">
-                No rooms found.
+              <div className="col-span-3 flex flex-col items-center justify-center p-12 space-y-6">
+                <div className="relative">
+                  <div className="w-24 h-24 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center bg-muted/20">
+                    <svg
+                      width="32"
+                      height="32"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                      className="text-muted-foreground/60"
+                    >
+                      <path d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2 2z" />
+                      <path d="M8 21v-4a2 2 0 012-2h4a2 2 0 012 2v4" />
+                      <circle cx="12" cy="11" r="2" />
+                    </svg>
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-background border-2 border-muted-foreground/20 flex items-center justify-center">
+                    <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" className="text-muted-foreground/60">
+                      <path d="M6 9l6 6 6-6" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="text-center space-y-2">
+                  <h3 className="text-lg font-semibold text-foreground">No Joined Rooms</h3>
+                  <p className="text-sm text-muted-foreground max-w-md">
+                    You haven't joined any rooms yet. join an existing one to get started.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
+                  <div className="h-px w-8 bg-gradient-to-r from-transparent to-muted-foreground/20"></div>
+                  <span className="font-medium">Start exploring</span>
+                  <div className="h-px w-8 bg-gradient-to-l from-transparent to-muted-foreground/20"></div>
+                </div>
               </div>
             )}
           </div>

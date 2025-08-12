@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   Inbox,
+  LogInIcon,
   LogOut,
   Search,
   Trash2,
@@ -37,6 +38,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { NextResponse } from "next/server"
 
 
 interface roomUser {
@@ -57,12 +59,38 @@ interface roomUser {
 
 interface sideBarLeftProps extends React.ComponentProps<typeof Sidebar> {
   roomUser?: roomUser[];
+  roomOwner: number;
 }
 
-export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
+export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps) {
 
   const [searchQuery, setSearchQuery] = useState('')
+  const [user, setUser] = useState<{ id: number } | null>(null)
   const router = useRouter()
+
+  React.useEffect(() => {
+    const getUserLogged = async () => {
+      try {
+        const userRes = await fetch('/api/user', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!userRes.ok) {
+          throw new Error("Failed to fetch user");
+        }
+
+        const user = await userRes.json();
+        setUser(user)
+      } catch (error) {
+        console.log("unauthorized")
+      }
+    }
+
+    getUserLogged()
+  }, [])
 
   const filteredAndSortedUser = useMemo(() => {
     if (!roomUser || roomUser.length === 0) return []
@@ -138,6 +166,27 @@ export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
       router.push('/rooms')
     } catch (error) {
 
+    }
+  }
+
+  const deleteRoom = async (room_id: number) => {
+    try {
+      if (user?.id === roomOwner) {
+        const deleteRoom = await fetch(`/api/room/${room_id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+
+        const isDeleteRoom = await deleteRoom.json()
+        console.log(isDeleteRoom)
+        router.push('/rooms')
+      } else {
+        throw Error
+      }
+    } catch (error) {
+      console.log('Error deleting room')
     }
   }
 
@@ -281,23 +330,43 @@ export function SidebarLeft({ roomUser, ...props }: sideBarLeftProps) {
           </div>
         </SidebarContent>
         <SidebarFooter>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="destructive" className="cursor-pointer">Exit Room</Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This action cannot be undone. you will leave the room
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => outRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><LogOut />Out Room</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          {user?.id === roomOwner ? (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="cursor-pointer"><Trash2 />Delete Room</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the room and remove all users from it.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => deleteRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><Trash2 />Delete Room</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" className="cursor-pointer"><LogInIcon className="rotate-180" />Exit Room</Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. you will leave the room
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={() => outRoom(roomUser?.[0]?.room_id || 0)} className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"><LogOut />Out Room</AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </SidebarFooter>
       </div>
     </Sidebar>
