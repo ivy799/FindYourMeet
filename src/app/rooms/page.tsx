@@ -297,7 +297,9 @@ export default function Page() {
       const checkUserAddressRes = await checkUserAddress.json()
 
       if (!checkUserAddressRes || !checkUserAddressRes.address) {
-        toast('Please set your address first before create a room!');
+        toast('Please set your address first before create or join a room!');
+        setIsMakeRoomButtonLoading(false)
+        setIsJoinRoomButtonLoading(false)
         return false;
       }
 

@@ -12,7 +12,6 @@ import {
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -35,10 +34,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [date, setDate] = React.useState<Date | undefined>(new Date())
   const [isAddressUpdate, setIsAddressUpdate] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isAddressLoading, setIsAddressLoading] = useState(false)
+  const [hasAddress, setHasAddress] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
     const fetchUserDetail = async () => {
+      setIsAddressLoading(true)
       try {
         const addUserDetail = await fetch('/api/user_detail', {
           method: "GET",
@@ -51,10 +53,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         if (!userDetail) {
           throw Error
         }
-
+        setHasAddress(true)
         setAddress(userDetail.address)
+        setIsAddressLoading(false)
       } catch (error) {
-        console.error("Error fetching user detail:", error)
+        setHasAddress(false)
+        setIsAddressLoading(false)
       }
     };
     fetchUserDetail();
@@ -100,9 +104,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       const userDetail = await addUserDetail.json()
       setAddress(address);
+      setHasAddress(true)
       toast.success("Address added successfully");
     } catch (error) {
       console.error("Error adding address:", error)
+      setHasAddress(false)
       toast.error("Failed to add address");
     }
   }
@@ -195,16 +201,21 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="rounded-xl border border-sidebar-border bg-background/80 p-4 shadow transition-colors hover:bg-background/90 flex flex-col items-center justify-between">
             <div className="flex items-center gap-3">
             </div>
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}> {/* ✅ Control dialog with state */}
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <div className="flex flex-row items-center w-full justify-between">
                 <span className="text-base font-medium text-foreground break-words max-w-[140px]">
-                  {address || <BlinkBlur
-                    size="small"
-                    color="currentColor"
-                    text=""
-                    textColor=""
-                    speedPlus={2}
-                    style={{ color: "var(--foreground)" }} />}
+                  {isAddressLoading ? (
+                    <BlinkBlur
+                      size="small"
+                      color="currentColor"
+                      text=""
+                      textColor=""
+                      speedPlus={2}
+                      style={{ color: "var(--foreground)" }}
+                    />
+                  ) : (
+                    hasAddress ? address : "Add address here"
+                  )}
                 </span>
                 <DialogTrigger asChild>
                   <Button
@@ -223,7 +234,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       e.preventDefault();
                       const formData = new FormData(e.currentTarget);
                       const inputAddress = formData.get("address") as string;
-                      
+
                       if (!inputAddress.trim()) {
                         toast.error("Please enter a valid address");
                         return;
@@ -237,7 +248,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         } else {
                           await addAddress(inputAddress);
                         }
-                        
+
                         setIsDialogOpen(false);
                       } catch (error) {
                         console.error("Error updating/adding address:", error);
@@ -270,17 +281,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       />
                     </div>
                     <DialogFooter className="mt-6 flex gap-2">
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
+                        variant="outline"
                         className="w-24"
                         onClick={() => setIsDialogOpen(false)}
                         disabled={isAddressUpdate}
                       >
                         Cancel
                       </Button>
-                      <Button 
-                        type="submit" 
+                      <Button
+                        type="submit"
                         className="w-32 shadow-sm"
                         disabled={isAddressUpdate}
                       >
