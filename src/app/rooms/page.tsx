@@ -28,7 +28,6 @@ import { Input } from "@/components/ui/input"
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSeparator,
   InputOTPSlot,
 } from "@/components/ui/input-otp"
 import { useUser } from "@clerk/nextjs"

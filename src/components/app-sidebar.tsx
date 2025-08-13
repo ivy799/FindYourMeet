@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from "react"
-import { Edit, Loader2Icon } from "lucide-react"
+import { Edit, Loader2Icon, CheckCircle, XCircle } from "lucide-react"
 
 import { Calendar } from "./ui/calendar"
 import {
@@ -36,6 +36,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isAddressLoading, setIsAddressLoading] = useState(false)
   const [hasAddress, setHasAddress] = useState(false)
+  const [isCheckingAddress, setIsCheckingAddress] = useState(false)
+  const [addressCheckResult, setAddressCheckResult] = useState<{
+    isValid: boolean;
+    lat?: number;
+    lon?: number;
+    message?: string;
+  } | null>(null)
+  const [inputAddress, setInputAddress] = useState("")
   const router = useRouter()
 
   useEffect(() => {
@@ -63,6 +71,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     };
     fetchUserDetail();
   }, [])
+
+  useEffect(() => {
+    if (isDialogOpen) {
+      setInputAddress(address || "")
+      setAddressCheckResult(null)
+    }
+  }, [isDialogOpen, address])
 
   const addAddress = async (address: string) => {
     if (!user) {
@@ -171,8 +186,74 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
   }
 
+  const checkAddress = async (addressToCheck: string) => {
+    if (!addressToCheck.trim()) {
+      setAddressCheckResult({
+        isValid: false,
+        message: "Please enter an address"
+      })
+      return
+    }
+
+    setIsCheckingAddress(true)
+    
+    try {
+      const geoRes = await fetch(
+        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addressToCheck)}`
+      );
+
+      if (!geoRes.ok) {
+        throw new Error('Failed to fetch location data')
+      }
+
+      const geoData = await geoRes.json()
+
+      if (!geoData || geoData.length === 0) {
+        setAddressCheckResult({
+          isValid: false,
+          message: "Address not found. Please try a more specific address."
+        })
+        return
+      }
+
+      const lat = parseFloat(geoData[0].lat)
+      const lon = parseFloat(geoData[0].lon)
+
+      if (isNaN(lat) || isNaN(lon)) {
+        setAddressCheckResult({
+          isValid: false,
+          message: "Invalid coordinates received from address"
+        })
+        return
+      }
+
+      setAddressCheckResult({
+        isValid: true,
+        lat,
+        lon,
+        message: `Address found! Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}`
+      })
+
+    } catch (error) {
+      console.error("Error checking address:", error)
+      setAddressCheckResult({
+        isValid: false,
+        message: "Failed to validate address. Please try again."
+      })
+    } finally {
+      setIsCheckingAddress(false)
+    }
+  }
+
   const handleBackToHome = () => {
     router.push('/')
+  }
+
+  const handleInputChange = (value: string) => {
+    setInputAddress(value)
+    if (addressCheckResult) {
+      setAddressCheckResult(null)
+    }
   }
 
   return (
@@ -232,11 +313,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <form
                     onSubmit={async (e) => {
                       e.preventDefault();
-                      const formData = new FormData(e.currentTarget);
-                      const inputAddress = formData.get("address") as string;
 
                       if (!inputAddress.trim()) {
                         toast.error("Please enter a valid address");
+                        return;
+                      }
+
+                      if (!addressCheckResult || !addressCheckResult.isValid) {
+                        toast.error("Please check and validate your address first");
                         return;
                       }
 
@@ -274,11 +358,44 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         name="address"
                         placeholder="Enter your address"
                         className="h-10 bg-background border border-input rounded-md px-3 text-foreground"
-                        defaultValue={address}
+                        value={inputAddress}
+                        onChange={(e) => handleInputChange(e.target.value)}
                         autoComplete="off"
                         disabled={isAddressUpdate}
                         required
                       />
+                      <Button 
+                        type="button"
+                        variant="secondary" 
+                        onClick={() => checkAddress(inputAddress)}
+                        disabled={isCheckingAddress || !inputAddress.trim() || isAddressUpdate}
+                        className="flex items-center gap-2"
+                      >
+                        {isCheckingAddress ? (
+                          <>
+                            <Loader2Icon className="animate-spin h-4 w-4" />
+                            Checking Address...
+                          </>
+                        ) : (
+                          "Check Address"
+                        )}
+                      </Button>
+                      
+                      {/* Address check result */}
+                      {addressCheckResult && (
+                        <div className={`flex items-start gap-2 p-3 rounded-md border text-sm ${
+                          addressCheckResult.isValid 
+                            ? 'bg-green-50 border-green-200 text-green-800 dark:bg-green-950 dark:border-green-800 dark:text-green-200' 
+                            : 'bg-red-50 border-red-200 text-red-800 dark:bg-red-950 dark:border-red-800 dark:text-red-200'
+                        }`}>
+                          {addressCheckResult.isValid ? (
+                            <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                          ) : (
+                            <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                          )}
+                          <span className="leading-relaxed">{addressCheckResult.message}</span>
+                        </div>
+                      )}
                     </div>
                     <DialogFooter className="mt-6 flex gap-2">
                       <Button
@@ -293,7 +410,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       <Button
                         type="submit"
                         className="w-32 shadow-sm"
-                        disabled={isAddressUpdate}
+                        disabled={isAddressUpdate || !addressCheckResult || !addressCheckResult.isValid}
                       >
                         {isAddressUpdate ? (
                           <>
