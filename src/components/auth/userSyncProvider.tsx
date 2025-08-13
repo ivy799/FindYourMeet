@@ -1,12 +1,12 @@
 'use client'
 
-import { userSync } from "@/hooks/use-userSync";
+import { useUserSync } from "@/hooks/use-userSync";
 import { useUser } from "@clerk/nextjs";
 
 
 export function UserSyncProvider({ children }: { children: React.ReactNode }) {
   const { isSignedIn } = useUser()
-  const { isSyncing, syncError, hasSync, resetSync} = userSync()
+  const { isSyncing, syncError, hasSync, resetSync} = useUserSync()
 
   if (isSignedIn && !hasSync && isSyncing) {
     return (

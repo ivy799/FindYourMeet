@@ -64,7 +64,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         setHasAddress(true)
         setAddress(userDetail.address)
         setIsAddressLoading(false)
-      } catch (error) {
+      } catch {
         setHasAddress(false)
         setIsAddressLoading(false)
       }
@@ -117,7 +117,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         throw new Error('Failed to add address');
       }
 
-      const userDetail = await addUserDetail.json()
+      await addUserDetail.json()
       setAddress(address);
       setHasAddress(true)
       toast.success("Address added successfully");

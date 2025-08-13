@@ -78,7 +78,7 @@ async function fetchPOIsInRadius(centroid: { lat: number; lot: number }, radiusM
         const data = await response.json();
         console.log('Overpass API response:', data);
         
-        const pois: POI[] = data.elements.map((element: any) => {
+        const pois: POI[] = data.elements.map((element: { id: number; type: string; lat?: number; lon?: number; center?: { lat: number; lon: number }; tags?: Record<string, string> }) => {
             let lat, lon;
             
             if (element.type === 'node') {

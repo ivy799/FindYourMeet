@@ -62,7 +62,7 @@ export async function GET() {
 
     return NextResponse.json(allRoom);
 
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to get rooms" }, { status: 500 });
   }
 }

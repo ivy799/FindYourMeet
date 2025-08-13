@@ -133,8 +133,8 @@ export function SidebarRight({
     if (!searchQuery.trim()) {
       return [...validPois].sort((a, b) => {
         // Sort by distance first, then by name
-        const distanceA = (a as any).distance || 0
-        const distanceB = (b as any).distance || 0
+        const distanceA = a.distance || 0
+        const distanceB = b.distance || 0
         if (distanceA !== distanceB) {
           return distanceA - distanceB
         }
@@ -169,8 +169,8 @@ export function SidebarRight({
       if (!aStartsWith && bStartsWith) return 1
 
       // Then sort by distance
-      const distanceA = (a as any).distance || 0
-      const distanceB = (b as any).distance || 0
+      const distanceA = a.distance || 0
+      const distanceB = b.distance || 0
       if (distanceA !== distanceB) {
         return distanceA - distanceB
       }
@@ -363,7 +363,7 @@ export function SidebarRight({
                       </h4>
                       <Badge
                         variant="outline"
-                        className={`text-xs flex-shrink-0 ${searchQuery && categoryPOIs.some(poi => 
+                        className={`text-xs flex-shrink-0 ${searchQuery && categoryPOIs.some(() => 
                           getCategoryDisplayName(category).toLowerCase().includes(searchQuery.toLowerCase())
                         ) ? 'ring-1 ring-yellow-400/50' : ''}`}
                         style={{ borderColor: POITypeIcons[category]?.color || '#636e72' }}
@@ -399,7 +399,7 @@ export function SidebarRight({
                                 <div className="flex items-center gap-1 mt-1">
                                   <Clock className="size-3 text-sidebar-foreground/40 flex-shrink-0" />
                                   <span className="text-xs text-sidebar-foreground/60">
-                                    {formatDistance((poi as any).distance)}
+                                    {formatDistance(poi.distance)}
                                   </span>
                                 </div>
                                 {isHighlighted && (

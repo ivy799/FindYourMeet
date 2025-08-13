@@ -1,7 +1,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState, useRef } from "react";
 
-export function userSync() {
+export function useUserSync() {
     const { user, isLoaded } = useUser()
     const [isSyncing, setSyncing] = useState(false)
     const [syncError, setSyncError] = useState<string | null>(null)

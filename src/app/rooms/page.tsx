@@ -1,5 +1,43 @@
 'use client'
 
+// Define types for the data structures
+interface User {
+  id: string;
+  clerk_user_id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  image_url: string;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface Room {
+  id: string;
+  name: string;
+  code: number;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+  owner_id: string;
+  owner: User;
+  room_user: Array<{
+    id: string;
+    room_id: string;
+    user_id: string;
+    joined_at: Date;
+    user: User;
+  }>;
+}
+
+interface JoinedRoom {
+  id: string;
+  room_id: string;
+  user_id: string;
+  joined_at: Date;
+  room: Room;
+}
+
 import { AppSidebar } from "@/components/app-sidebar"
 import {
   Breadcrumb,
@@ -49,9 +87,9 @@ import { toast } from "sonner"
 export default function Page() {
   const { user } = useUser()
   const router = useRouter()
-  const [logedUser, setLogedUser] = useState<any>(null)
-  const [rooms, setRoom] = useState([]);
-  const [joinedRoom, setJoinedRoom] = useState([])
+  const [logedUser, setLogedUser] = useState<User | null>(null)
+  const [rooms, setRoom] = useState<Room[]>([]);
+  const [joinedRoom, setJoinedRoom] = useState<JoinedRoom[]>([])
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isJoinDialogOpen, setIsJoinDialogOpen] = useState(false)
   const [isLoadingRooms, setIsLoadingRooms] = useState(true)
@@ -68,19 +106,6 @@ export default function Page() {
     const fetchUserAndRooms = async () => {
       setIsLoadingRooms(true)
       try {
-        const userRes = await fetch('/api/user', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-
-        if (!userRes.ok) {
-          throw new Error("Failed to fetch user");
-        }
-
-        const userData = await userRes.json();
-
         const roomsRes = await fetch('/api/room', {
           method: 'GET',
           headers: {
@@ -94,8 +119,8 @@ export default function Page() {
 
         const roomsData = await roomsRes.json();
         setRoom(roomsData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
+      } catch {
+        console.error("Error fetching data");
       } finally {
         setIsLoadingRooms(false)
       }
@@ -132,7 +157,7 @@ export default function Page() {
         const fixJoinedRoom = await joinedRoom.json()
         setJoinedRoom(fixJoinedRoom)
         setLogedUser(userData)
-      } catch (error) {
+      } catch {
         console.log("error fetching data")
       } finally {
         setIsLoadingJoinedRooms(false)
@@ -214,8 +239,8 @@ export default function Page() {
 
       return room.id
 
-    } catch (error) {
-      console.error('Error creating room:', error);
+    } catch {
+      console.error('Error creating room');
     }
   }
 
@@ -253,7 +278,7 @@ export default function Page() {
       const fixRoom = await findRoom.json()
 
 
-      const isUserAlreadyInRoom = fixRoom.room_user.some((roomUser: any) => roomUser.user_id === userData.id);
+      const isUserAlreadyInRoom = fixRoom.room_user.some((roomUser: { user_id: string }) => roomUser.user_id === userData.id);
       if (isUserAlreadyInRoom) {
         toast("You have already joined this room")
         setIsJoinRoomButtonLoadingInDialog(false)
@@ -279,7 +304,7 @@ export default function Page() {
       const newUserRoomFix = await makeNewRoomUser.json()
       console.log(newUserRoomFix)
       return fixRoom.id
-    } catch (error) {
+    } catch {
 
     }
   }
@@ -308,7 +333,7 @@ export default function Page() {
       }
 
       return true
-    } catch (error) {
+    } catch {
       return false
     }
   }
@@ -568,7 +593,7 @@ export default function Page() {
         <div className="flex flex-1 flex-col gap-4 p-4">
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             {rooms && rooms.length > 0 ? (
-              rooms.map((room: any) => (
+              rooms.map((room: Room) => (
                 <Card
                   className="w-full max-w-sm transition-transform hover:scale-[1.03] hover:shadow-xl border border-foreground/10 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-black group"
                   key={room.id}
@@ -629,7 +654,7 @@ export default function Page() {
                 <div className="text-center space-y-2">
                   <h3 className="text-lg font-semibold text-foreground">No Created Rooms</h3>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    You haven't create any rooms yet. Create a new room to get started.
+                    You haven&apos;t create any rooms yet. Create a new room to get started.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
@@ -666,9 +691,9 @@ export default function Page() {
           <div className="grid auto-rows-min gap-4 md:grid-cols-3">
             {joinedRoom && joinedRoom.length > 0 && logedUser ? (
               (() => {
-                const filteredRooms = joinedRoom.filter((joinedRoom: any) => joinedRoom.room?.owner_id !== logedUser?.id);
+                const filteredRooms = joinedRoom.filter((joinedRoom: JoinedRoom) => joinedRoom.room?.owner_id !== logedUser?.id);
                 return filteredRooms.length > 0 ? (
-                  filteredRooms.map((joinedRoom: any) => (
+                  filteredRooms.map((joinedRoom: JoinedRoom) => (
                     <Card
                       className="w-full max-w-sm transition-transform hover:scale-[1.03] hover:shadow-xl border border-foreground/10 bg-gradient-to-br from-white via-zinc-50 to-zinc-100 dark:from-zinc-900 dark:via-zinc-950 dark:to-black group"
                       key={joinedRoom.room.id}
@@ -733,7 +758,7 @@ export default function Page() {
                     <div className="text-center space-y-2">
                       <h3 className="text-lg font-semibold text-foreground">No Joined Rooms</h3>
                       <p className="text-sm text-muted-foreground max-w-md">
-                        You haven't joined any rooms yet. join an existing one to get started.
+                        You haven&apos;t joined any rooms yet. join an existing one to get started.
                       </p>
                     </div>
                     <div className="flex items-center gap-3 text-xs text-muted-foreground/80">
@@ -770,7 +795,7 @@ export default function Page() {
                 <div className="text-center space-y-2">
                   <h3 className="text-lg font-semibold text-foreground">No Joined Rooms</h3>
                   <p className="text-sm text-muted-foreground max-w-md">
-                    You haven't joined any rooms yet. join an existing one to get started.
+                    You haven&apos;t joined any rooms yet. join an existing one to get started.
                   </p>
                 </div>
                 <div className="flex items-center gap-3 text-xs text-muted-foreground/80">

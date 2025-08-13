@@ -1,6 +1,39 @@
 'use client'
 
-import MapComponent from "@/components/map"
+'use client'
+
+interface User {
+  id: number;
+  clerk_user_id: string;
+  email: string;
+  name: string;
+  image_url: string;
+  role_id: number;
+  created_at: Date;
+  updated_at: Date;
+}
+
+interface RoomUser {
+  id: number;
+  room_id: number;
+  user_id: number;
+  joined_at: Date;
+  user: User;
+}
+
+interface Room {
+  id: number;
+  name: string;
+  code: number;
+  status: string;
+  created_at: Date;
+  updated_at: Date;
+  owner_id: number;
+  owner: User;
+  room_user: RoomUser[];
+}
+
+import Map from "@/components/map"
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
 import {
@@ -27,7 +60,7 @@ interface PageProps {
 export default function Page({ params }: PageProps) {
     const { user } = useUser()
     const [roomId, setRoomId] = useState<string>('')
-    const [roomDetails, setRoomDetails] = useState<any>(null)
+    const [roomDetails, setRoomDetails] = useState<Room | null>(null)
     const [userLocations, setUserLocations] = useState<{ numLat: number; numLot: number }[]>([])
     const [pois, setPois] = useState<POI[]>([])
     const [poisLoading, setPoisLoading] = useState(false)
@@ -112,7 +145,7 @@ export default function Page({ params }: PageProps) {
         )
     }
 
-    const safeRoomUser = roomDetails?.room_user?.map((ru: any) => ({
+    const safeRoomUser = roomDetails?.room_user?.map((ru: RoomUser) => ({
         ...ru,
         user: {
             ...ru.user,
@@ -123,7 +156,7 @@ export default function Page({ params }: PageProps) {
 
     return (
         <SidebarProvider>
-            <SidebarLeft roomUser={safeRoomUser} roomOwner={roomDetails?.owner?.id} />
+            <SidebarLeft roomUser={safeRoomUser} roomOwner={roomDetails?.owner?.id || 0} />
             <SidebarInset>
                 <header className="bg-background sticky top-0 flex h-14 shrink-0 items-center gap-2 border-b">
                     <div className="flex flex-1 items-center gap-2 px-3">
@@ -145,7 +178,7 @@ export default function Page({ params }: PageProps) {
                 </header>
                 <div className="flex flex-1 flex-col gap-4 p-4">
                     <div className="bg-muted/50 mx-auto h-[100vh] w-full max-w-3xl rounded-xl p-4 relative z-0">
-                        <MapComponent 
+                        <Map 
                             locations={userLocations} 
                             onPOIsUpdate={handlePOIsUpdate}
                             highlightedPOI={highlightedPOI}

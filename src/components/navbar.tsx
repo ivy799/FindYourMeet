@@ -50,7 +50,7 @@ export function Navbar() {
                                 <ul className="grid gap-3 p-6 md:w-[400px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
                                     <li className="row-span-3">
                                         <NavigationMenuLink asChild>
-                                            <a
+                                            <Link
                                                 className="relative flex h-full w-full select-none flex-col justify-end rounded-md overflow-hidden p-6 no-underline outline-none focus:shadow-md group"
                                                 href="/"
                                             >
@@ -133,7 +133,7 @@ export function Navbar() {
                                                 </div>
 
                                                 <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                                            </a>
+                                            </Link>
                                         </NavigationMenuLink>
                                     </li>
                                     <ListItem href="/rooms" title="Browse Rooms">
@@ -143,7 +143,7 @@ export function Navbar() {
                                         Get support and find answers to your questions.
                                     </ListItem>
                                     <ListItem href="/#pricing" title="Contact">
-                                        Reach out to us for partnership, feedback, or any inquiries. We're here to help!
+                                        Reach out to us for partnership, feedback, or any inquiries. We&apos;re here to help!
                                     </ListItem>
                                 </ul>
                             </NavigationMenuContent>

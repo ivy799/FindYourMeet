@@ -77,7 +77,7 @@ export async function GET(
 
         return NextResponse.json(userLocations);
 
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

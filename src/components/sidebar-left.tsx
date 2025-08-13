@@ -87,7 +87,7 @@ export function SidebarLeft({ roomUser, roomOwner, ...props }: sideBarLeftProps)
 
         const user = await userRes.json();
         setUser(user)
-      } catch (error) {
+      } catch {
         console.log("unauthorized")
         setUser(null)
       } finally {
