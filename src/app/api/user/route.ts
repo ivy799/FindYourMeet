@@ -22,7 +22,6 @@ export async function GET() {
 
     return NextResponse.json(user);
   } catch (error) {
-    console.log("Failed to get user", error);
     return NextResponse.json({ error: "Failed to get user" }, { status: 500 });
   }
 }

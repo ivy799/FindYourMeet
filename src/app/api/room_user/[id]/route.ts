@@ -1,11 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { PrismaClient } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET() {
   try {
 
     const { userId } = await auth();
@@ -43,12 +43,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json(joinedRoom)
 
   } catch (error) {
-    console.error("API Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE({ params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
 
@@ -76,7 +75,6 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json(deleteRoomById)
   } catch (error) {
-    console.error("Delete API Error:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

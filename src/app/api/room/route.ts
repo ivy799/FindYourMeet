@@ -13,8 +13,6 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    console.log("Room creation request body:", body);
-
     const { owner_id, name, code, status } = body;
 
     if (!owner_id || !name || !code) {
@@ -33,10 +31,8 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    console.log("Room created successfully:", newRoom);
     return NextResponse.json(newRoom, { status: 201 });
   } catch (error) {
-    console.error("Failed to create new room:", error);
     return NextResponse.json({
       error: "Failed to create new room",
       details: error instanceof Error ? error.message : "Unknown error"
@@ -44,7 +40,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const { userId } = await auth();
 

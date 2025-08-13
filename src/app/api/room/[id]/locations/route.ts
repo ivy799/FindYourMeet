@@ -78,7 +78,6 @@ export async function GET(
         return NextResponse.json(userLocations);
 
     } catch (error) {
-        console.error("Error fetching user locations:", error);
         return NextResponse.json(
             { error: "Internal server error" },
             { status: 500 }

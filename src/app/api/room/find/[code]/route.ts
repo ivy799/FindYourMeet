@@ -41,7 +41,6 @@ export async function GET(
     return NextResponse.json(roomByCode);
 
   } catch (error) {
-    console.error("Error finding room:", error);
     return NextResponse.json({ error: "Failed to get room" }, { status: 500 });
   }
 }

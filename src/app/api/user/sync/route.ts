@@ -1,6 +1,5 @@
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { Prisma, PrismaClient } from '@prisma/client'
-import { id } from 'date-fns/locale'
+import { PrismaClient } from '@prisma/client'
 import { NextResponse } from 'next/server'
 
 const prisma = new PrismaClient()
@@ -49,7 +48,6 @@ export async function POST() {
         })
 
     } catch (error) {
-        console.error('Error syncing user:', error)
         return NextResponse.json(
             { error: 'Internal server error', success: false },
             { status: 500 }
