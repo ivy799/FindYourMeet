@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient();
 
-export async function GET({ params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { userId } = await auth();
     const { id } = await params;
@@ -43,8 +43,10 @@ export async function GET({ params }: { params: Promise<{ id: string }> }) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
+    console.log("API: Found room:", roomDetail);
     return NextResponse.json(roomDetail);
   } catch (error) {
+    console.error("API Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -81,6 +83,7 @@ export async function DELETE(_request: NextRequest, { params }: { params: Promis
     })
     return NextResponse.json(deleteRoom)
   } catch (error) {
+    console.error("DELETE Error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

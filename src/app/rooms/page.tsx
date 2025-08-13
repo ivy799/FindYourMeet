@@ -229,7 +229,6 @@ export default function Page() {
     }
 
     try {
-      // getting user
       const userRes = await fetch('/api/user', {
         method: 'GET',
         headers: {
@@ -244,7 +243,7 @@ export default function Page() {
       console.log("User data:", userData);
 
 
-      // getting room by code
+
       const findRoom = await fetch(`/api/room/find/${roomCode}`, {
         method: 'GET',
         headers: {
@@ -256,7 +255,7 @@ export default function Page() {
       }
       const fixRoom = await findRoom.json()
 
-      // Check if user is already in the room
+
       const isUserAlreadyInRoom = fixRoom.room_user.some((roomUser: any) => roomUser.user_id === userData.id);
       if (isUserAlreadyInRoom) {
         toast("You have already joined this room")
@@ -265,7 +264,7 @@ export default function Page() {
         return null
       }
 
-      // create new user_room data
+
       const userAndRoomDetail = {
         room_id: fixRoom.id,
         user_id: userData.id
