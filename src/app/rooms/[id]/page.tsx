@@ -1,5 +1,6 @@
 'use client'
 
+import MapComponent from "@/components/map"
 import { SidebarLeft } from "@/components/sidebar-left"
 import { SidebarRight } from "@/components/sidebar-right"
 import {
@@ -14,10 +15,9 @@ import {
     SidebarProvider,
     SidebarTrigger,
 } from "@/components/ui/sidebar"
-import MapComponent from "@/components/map"
-import { useState, useEffect } from "react"
-import { useUser } from "@clerk/nextjs"
 import type { POI } from "@/hooks/use-poi"
+import { useUser } from "@clerk/nextjs"
+import { useEffect, useState } from "react"
 import { FourSquare } from "react-loading-indicators"
 
 interface PageProps {

@@ -1,13 +1,13 @@
 "use client"
-import Image from "next/image"
-import { BackgroundBeams } from "@/components/ui/background-beams"
-import { motion } from "motion/react"
-import { Calendar, MapPin, Users, Clock, Shield, Star } from "lucide-react"
-import { GlowingEffect } from "@/components/ui/glowing-effect"
-import { Badge } from "@/components/ui/badge"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import Link from "next/link"
+import { BackgroundBeams } from "@/components/ui/background-beams"
+import { Badge } from "@/components/ui/badge"
+import { GlowingEffect } from "@/components/ui/glowing-effect"
 import { ModernLogo } from "@/components/ui/modern-logo"
+import { Calendar, Clock, MapPin, Shield, Users } from "lucide-react"
+import { motion } from "motion/react"
+import Image from "next/image"
+import Link from "next/link"
 
 export default function Home() {
   return (

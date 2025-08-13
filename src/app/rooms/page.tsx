@@ -7,30 +7,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
 } from "@/components/ui/breadcrumb"
-import { Separator } from "@/components/ui/separator"
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp"
-import { useUser } from "@clerk/nextjs"
 import {
   Card,
   CardDescription,
@@ -38,13 +15,34 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ChevronRightIcon } from "lucide-react"
-import { useEffect, useState } from "react"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp"
+import { Separator } from "@/components/ui/separator"
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar"
+import { useUser } from "@clerk/nextjs"
+import { ChevronRightIcon, Loader2Icon } from "lucide-react"
 import Link from "next/link"
-import { toast } from "sonner"
-import { FourSquare } from "react-loading-indicators";
-import { Loader2Icon } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { useEffect, useState } from "react"
+import { FourSquare } from "react-loading-indicators"
+import { toast } from "sonner"
 
 
 

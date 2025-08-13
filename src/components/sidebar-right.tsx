@@ -1,16 +1,16 @@
 'use client'
 
-import type * as React from "react"
-import { Sidebar, SidebarContent, SidebarSeparator, SidebarHeader, SidebarInput } from "@/components/ui/sidebar"
 import { Button } from "@/components/ui/button"
-import { Copy, Check, MapPin, Clock, Star, Search } from "lucide-react"
-import { Avatar, AvatarImage } from "./ui/avatar"
-import { useState, useMemo } from "react"
+import { Sidebar, SidebarContent, SidebarHeader, SidebarInput } from "@/components/ui/sidebar"
+import type { POI } from "@/hooks/use-poi"
+import { Check, Clock, Copy, MapPin, Search } from "lucide-react"
+import type * as React from "react"
+import { useMemo, useState } from "react"
+import { FourSquare } from "react-loading-indicators"
 import { toast } from "sonner"
+import { Avatar, AvatarImage } from "./ui/avatar"
 import { Badge } from "./ui/badge"
 import { ScrollArea } from "./ui/scroll-area"
-import type { POI } from "@/hooks/use-poi"
-import { FourSquare } from "react-loading-indicators";
 
 
 interface sideBarRightProps extends React.ComponentProps<typeof Sidebar> {
