@@ -32,6 +32,7 @@ export default function Page({ params }: PageProps) {
     const [pois, setPois] = useState<POI[]>([])
     const [poisLoading, setPoisLoading] = useState(false)
     const [loading, setLoading] = useState(true)
+    const [highlightedPOI, setHighlightedPOI] = useState<string | null>(null)
 
     useEffect(() => {
         const getRoomId = async () => {
@@ -84,6 +85,11 @@ export default function Page({ params }: PageProps) {
         console.log('POIs updated:', newPois.length)
         setPois(newPois)
         setPoisLoading(false)
+    }
+
+    const handlePOIClick = (poiId: string) => {
+        console.log('POI clicked:', poiId)
+        setHighlightedPOI(poiId === highlightedPOI ? null : poiId)
     }
 
     useEffect(() => {
@@ -142,6 +148,7 @@ export default function Page({ params }: PageProps) {
                         <MapComponent 
                             locations={userLocations} 
                             onPOIsUpdate={handlePOIsUpdate}
+                            highlightedPOI={highlightedPOI}
                         />
                     </div>
                 </div>
@@ -152,6 +159,8 @@ export default function Page({ params }: PageProps) {
                 ownerImage={roomDetails?.owner?.image_url}
                 pois={pois}
                 poisLoading={poisLoading}
+                onPOIClick={handlePOIClick}
+                highlightedPOI={highlightedPOI}
             />
         </SidebarProvider>
     )

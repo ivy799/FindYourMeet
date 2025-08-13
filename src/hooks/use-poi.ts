@@ -91,11 +91,17 @@ async function fetchPOIsInRadius(centroid: { lat: number; lot: number }, radiusM
                 return null;
             }
 
+            // Filter out POIs without names or with generic names
+            const name = element.tags?.name;
+            if (!name || name.toLowerCase() === 'unknown' || name.trim() === '') {
+                return null;
+            }
+
             return {
                 id: `${element.type}-${element.id}`,
                 lat,
                 lon,
-                name: element.tags?.name || 'Unknown',
+                name: name,
                 type: element.type,
                 amenity: element.tags?.amenity,
                 tags: element.tags || {}

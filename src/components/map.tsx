@@ -8,6 +8,7 @@ import { FourSquare } from "react-loading-indicators";
 type MapComponentProps = {
     locations: Location[];
     onPOIsUpdate?: (pois: POI[]) => void;
+    highlightedPOI?: string | null;
 };
 
 function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -23,7 +24,7 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
     return distance;
 }
 
-const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
+const MapComponent = ({ locations = [], onPOIsUpdate, highlightedPOI }: MapComponentProps) => {
     const [mounted, setMounted] = useState(false);
     const { pois, loading: poisLoading, centroid } = usePOI(locations, 2);
 
@@ -42,6 +43,49 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
 
         let map: any;
         let markers: any[] = [];
+        let poiMarkers: Map<string, any> = new Map();
+
+        const copyToClipboard = async (lat: number, lon: number) => {
+            const coordinates = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(coordinates);
+                } else {
+                    const textArea = document.createElement('textarea');
+                    textArea.value = coordinates;
+                    textArea.style.position = 'fixed';
+                    textArea.style.left = '-999999px';
+                    textArea.style.top = '-999999px';
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                }
+                
+                // Show success notification (you can customize this)
+                const notification = document.createElement('div');
+                notification.textContent = 'Coordinates copied!';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #10b981;
+                    color: white;
+                    padding: 12px 16px;
+                    border-radius: 8px;
+                    font-size: 14px;
+                    z-index: 10000;
+                    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 2000);
+            } catch (error) {
+                console.error('Failed to copy coordinates:', error);
+            }
+        };
 
         const initMap = async () => {
             try {
@@ -85,9 +129,19 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                             <div>
                                 <strong>User ${index + 1}</strong><br/>
                                 ${loc.address || 'Unknown address'}<br/>
-                                <strong>Distance from center:</strong> ${(distance / 1000).toFixed(2)} km
+                                <strong>Distance from center:</strong> ${(distance / 1000).toFixed(2)} km<br/>
+                                <strong>Coordinates:</strong> ${loc.numLat.toFixed(6)}, ${loc.numLot.toFixed(6)}<br/>
+                                <button onclick="navigator.clipboard ? navigator.clipboard.writeText('${loc.numLat.toFixed(6)}, ${loc.numLot.toFixed(6)}') : void(0)" 
+                                        style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;margin-top:4px;cursor:pointer;font-size:12px;">
+                                    📋 Copy Coordinates
+                                </button>
                             </div>
                         `);
+                    
+                    marker.on('click', () => {
+                        copyToClipboard(loc.numLat, loc.numLot);
+                    });
+                    
                     markers.push(marker);
                 });
 
@@ -98,12 +152,26 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                         iconSize: [16, 16],
                         iconAnchor: [8, 8],
                     })
-                }).addTo(map).bindPopup("🎯 Meeting Center");
+                }).addTo(map).bindPopup(`
+                    <div>
+                        🎯 <strong>Meeting Center</strong><br/>
+                        <strong>Coordinates:</strong> ${centroid.lat.toFixed(6)}, ${centroid.lot.toFixed(6)}<br/>
+                        <button onclick="navigator.clipboard ? navigator.clipboard.writeText('${centroid.lat.toFixed(6)}, ${centroid.lot.toFixed(6)}') : void(0)" 
+                                style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;margin-top:4px;cursor:pointer;font-size:12px;">
+                            📋 Copy Coordinates
+                        </button>
+                    </div>
+                `);
+                
+                centroidMarker.on('click', () => {
+                    copyToClipboard(centroid.lat, centroid.lot);
+                });
+                
                 markers.push(centroidMarker);
 
                 if (pois.length > 0) {
                     pois.forEach((poi) => {
-                        const getPoiIcon = (poi: POI) => {
+                        const getPoiIcon = (poi: POI, isHighlighted: boolean = false) => {
                             const amenity = poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'other';
                             const colors: Record<string, string> = {
                                 'restaurant': '#ff6b6b',
@@ -119,25 +187,46 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                                 'other': '#636e72'
                             };
 
+                            const size = isHighlighted ? 16 : 12;
+                            const border = isHighlighted ? '3px solid #fbbf24' : '1px solid white';
+                            const boxShadow = isHighlighted ? 'box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);' : '';
+
                             return L.divIcon({
                                 className: 'poi-marker',
-                                html: `<div style="background:${colors[amenity] || colors.other};width:12px;height:12px;border-radius:50%;border:1px solid white"></div>`,
-                                iconSize: [12, 12],
-                                iconAnchor: [6, 6],
+                                html: `<div style="background:${colors[amenity] || colors.other};width:${size}px;height:${size}px;border-radius:50%;border:${border};${boxShadow}"></div>`,
+                                iconSize: [size, size],
+                                iconAnchor: [size/2, size/2],
                             });
                         };
 
                         const distance = calculateDistance(centroid.lat, centroid.lot, poi.lat, poi.lon);
-                        const poiMarker = L.marker([poi.lat, poi.lon], { icon: getPoiIcon(poi) })
+                        const isHighlighted = highlightedPOI === poi.id;
+                        
+                        const poiMarker = L.marker([poi.lat, poi.lon], { icon: getPoiIcon(poi, isHighlighted) })
                             .addTo(map)
                             .bindPopup(`
                                 <div>
                                     <strong>${poi.name}</strong><br/>
                                     <strong>Type:</strong> ${poi.tags.amenity || poi.tags.shop || poi.tags.leisure || poi.tags.tourism || 'Other'}<br/>
-                                    <strong>Distance:</strong> ${(distance / 1000).toFixed(2)} km from center
+                                    <strong>Distance:</strong> ${(distance / 1000).toFixed(2)} km from center<br/>
+                                    <strong>Coordinates:</strong> ${poi.lat.toFixed(6)}, ${poi.lon.toFixed(6)}<br/>
+                                    <button onclick="navigator.clipboard ? navigator.clipboard.writeText('${poi.lat.toFixed(6)}, ${poi.lon.toFixed(6)}') : void(0)" 
+                                            style="background:#3b82f6;color:white;border:none;padding:4px 8px;border-radius:4px;margin-top:4px;cursor:pointer;font-size:12px;">
+                                        📋 Copy Coordinates
+                                    </button>
                                 </div>
                             `);
+                        
+                        poiMarker.on('click', () => {
+                            copyToClipboard(poi.lat, poi.lon);
+                        });
+                        
+                        if (isHighlighted) {
+                            poiMarker.openPopup();
+                        }
+                        
                         markers.push(poiMarker);
+                        poiMarkers.set(poi.id, poiMarker);
                     });
                 }
 
@@ -181,7 +270,7 @@ const MapComponent = ({ locations = [], onPOIsUpdate }: MapComponentProps) => {
                 console.error('Error cleaning up map:', error);
             }
         };
-    }, [mounted, locations, pois, centroid, poisLoading]);
+    }, [mounted, locations, pois, centroid, poisLoading, highlightedPOI]);
 
     if (!mounted) {
         return (
