@@ -1,13 +1,10 @@
 export function ModernLogo({ className = "" }: { className?: string }) {
   return (
     <div className={`relative size-8 ${className}`}>
-      {/* Outer ring */}
       <div className="absolute inset-0 rounded-full border-2 border-black dark:border-white"></div>
 
-      {/* Inner dot */}
       <div className="absolute top-1/2 left-1/2 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-black dark:bg-white"></div>
 
-      {/* Location pin tail */}
       <div className="absolute top-1/2 left-1/2 w-0.5 h-2 -translate-x-1/2 translate-y-1 bg-black dark:bg-white origin-top rotate-0"></div>
     </div>
   )
@@ -18,7 +15,6 @@ export function ModernLogoAlt({ className = "" }: { className?: string }) {
   return (
     <div className={`size-8 ${className}`}>
       <svg className="w-full h-full" viewBox="0 0 32 32" fill="none">
-        {/* Modern geometric location pin */}
         <circle
           cx="16"
           cy="12"

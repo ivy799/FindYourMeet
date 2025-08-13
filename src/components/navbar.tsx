@@ -51,25 +51,98 @@ export function Navbar() {
                                     <li className="row-span-3">
                                         <NavigationMenuLink asChild>
                                             <a
-                                                className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
+                                                className="relative flex h-full w-full select-none flex-col justify-end rounded-md overflow-hidden p-6 no-underline outline-none focus:shadow-md group"
                                                 href="/"
                                             >
-                                                <div className="mb-2 mt-4 text-lg font-medium">
-                                                    FindYourMeet
+                                                <div className="absolute inset-0 bg-white dark:bg-black">
+                                                    <div className="absolute inset-0 opacity-10 dark:opacity-20">
+                                                        <svg width="100%" height="100%" className="absolute inset-0">
+                                                            <defs>
+                                                                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                                                    <path d="M 20 0 L 0 0 0 20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+                                                                </pattern>
+                                                            </defs>
+                                                            <rect width="100%" height="100%" fill="url(#grid)" className="text-black dark:text-white" />
+                                                        </svg>
+                                                    </div>
+
+                                                    <div className="absolute inset-0">
+                                                        <div className="absolute top-4 right-4 w-8 h-8 border border-black/20 dark:border-white/20 rounded-full animate-pulse" />
+
+                                                        <div
+                                                            className="absolute top-12 left-8 w-4 h-4 bg-black/10 dark:bg-white/10 rotate-45 animate-bounce"
+                                                            style={{ animationDuration: "3s" }}
+                                                        />
+
+                                                        <div
+                                                            className="absolute bottom-16 right-8 w-0 h-0 border-l-4 border-r-4 border-b-6 border-l-transparent border-r-transparent border-b-black/20 dark:border-b-white/20 animate-pulse"
+                                                            style={{ animationDelay: "1s" }}
+                                                        />
+
+                                                        <div
+                                                            className="absolute bottom-8 left-4 w-6 h-6 border-2 border-black/15 dark:border-white/15 rounded-full animate-spin"
+                                                            style={{ animationDuration: "8s" }}
+                                                        />
+
+                                                        <div
+                                                            className="absolute top-1/2 right-2 w-2 h-8 bg-black/10 dark:bg-white/10 animate-pulse"
+                                                            style={{ animationDelay: "2s" }}
+                                                        />
+                                                    </div>
+
+                                                    <div className="absolute inset-0 opacity-5 dark:opacity-10">
+                                                        <svg width="100%" height="100%" className="absolute inset-0">
+                                                            <line
+                                                                x1="0"
+                                                                y1="0"
+                                                                x2="100%"
+                                                                y2="100%"
+                                                                stroke="currentColor"
+                                                                strokeWidth="1"
+                                                                className="text-black dark:text-white"
+                                                            />
+                                                            <line
+                                                                x1="0"
+                                                                y1="50%"
+                                                                x2="50%"
+                                                                y2="0"
+                                                                stroke="currentColor"
+                                                                strokeWidth="0.5"
+                                                                className="text-black dark:text-white"
+                                                            />
+                                                            <line
+                                                                x1="50%"
+                                                                y1="100%"
+                                                                x2="100%"
+                                                                y2="50%"
+                                                                stroke="currentColor"
+                                                                strokeWidth="0.5"
+                                                                className="text-black dark:text-white"
+                                                            />
+                                                        </svg>
+                                                    </div>
+
+                                                    <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/5 dark:to-white/5" />
                                                 </div>
-                                                <p className="text-sm leading-tight text-muted-foreground">
-                                                    Find and book perfect meeting spaces for your team.
-                                                </p>
+
+                                                <div className="relative z-10">
+                                                    <div className="mb-2 mt-4 text-lg font-medium text-black dark:text-white">FindYourMeet</div>
+                                                    <p className="text-sm leading-tight text-black/70 dark:text-white/70">
+                                                        Find and book perfect meeting spaces for your team.
+                                                    </p>
+                                                </div>
+
+                                                <div className="absolute inset-0 bg-black/5 dark:bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                                             </a>
                                         </NavigationMenuLink>
                                     </li>
                                     <ListItem href="/rooms" title="Browse Rooms">
                                         Create and Explore available rooms.
                                     </ListItem>
-                                    <ListItem href="/" title="Help Center">
+                                    <ListItem href="/#faq" title="Help Center">
                                         Get support and find answers to your questions.
                                     </ListItem>
-                                    <ListItem href="/" title="Contact">
+                                    <ListItem href="/#pricing" title="Contact">
                                         Reach out to us for partnership, feedback, or any inquiries. We're here to help!
                                     </ListItem>
                                 </ul>
@@ -77,17 +150,17 @@ export function Navbar() {
                         </NavigationMenuItem>
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                                <Link href="/about">About</Link>
+                                <Link href={{ pathname: "/", hash: "about" }}>About</Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                                <Link href="/pricing">Pricing</Link>
+                                <Link href={{ pathname: "/", hash: "pricing" }}>Pricing</Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
                         <NavigationMenuItem>
                             <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                                <Link href="/service">Service</Link>
+                                <Link href={{ pathname: "/", hash: "service" }}>Service</Link>
                             </NavigationMenuLink>
                         </NavigationMenuItem>
                     </NavigationMenuList>

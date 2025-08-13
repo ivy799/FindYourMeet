@@ -63,6 +63,7 @@ export default function Home() {
       </div>
 
       <motion.div
+        id="about"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -204,6 +205,81 @@ export default function Home() {
       </motion.div>
 
       <motion.div
+        id="service"
+        initial={{ opacity: 0, y: 40 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.8 }}
+        className="py-16 px-6 sm:px-16 lg:px-24 bg-white dark:bg-neutral-950"
+      >
+        <div className="max-w-7xl mx-auto">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center mb-16"
+          >
+            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
+              Why Choose FindYourMeet?
+            </h2>
+            <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
+              Discover the features that make booking meeting spaces effortless and efficient.
+            </p>
+          </motion.div>
+
+          <motion.ul
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2"
+          >
+            <AnimatedGridItem
+              area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
+              icon={<Calendar className="h-4 w-4 text-black dark:text-neutral-400" />}
+              title="Easy Booking System"
+              description="Book meeting rooms in seconds with our intuitive calendar interface. Real-time availability and instant confirmation."
+              delay={0.1}
+            />
+
+            <AnimatedGridItem
+              area="md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]"
+              icon={<MapPin className="h-4 w-4 text-black dark:text-neutral-400" />}
+              title="Global Locations"
+              description="Access meeting spaces in major cities worldwide. From New York to Tokyo, find the perfect space anywhere."
+              delay={0.2}
+            />
+
+            <AnimatedGridItem
+              area="md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]"
+              icon={<Users className="h-4 w-4 text-black dark:text-neutral-400" />}
+              title="Team Collaboration"
+              description="Built for teams of all sizes. Manage bookings, invite colleagues, and collaborate seamlessly."
+              delay={0.3}
+            />
+
+            <AnimatedGridItem
+              area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
+              icon={<Clock className="h-4 w-4 text-black dark:text-neutral-400" />}
+              title="24/7 Availability"
+              description="Book meeting rooms anytime, anywhere. Our platform works around the clock to serve your needs."
+              delay={0.4}
+            />
+
+            <AnimatedGridItem
+              area="md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]"
+              icon={<Shield className="h-4 w-4 text-black dark:text-neutral-400" />}
+              title="Secure & Reliable"
+              description="Enterprise-grade security and 99.9% uptime guarantee. Your bookings are safe with us."
+              delay={0.5}
+            />
+          </motion.ul>
+        </div>
+      </motion.div>
+
+      <motion.div
+        id="pricing"
         initial={{ opacity: 0, y: 40 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -530,79 +606,6 @@ export default function Home() {
         </div>
       </motion.div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="py-16 px-6 sm:px-16 lg:px-24 bg-white dark:bg-neutral-950"
-      >
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center mb-16"
-          >
-            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-white mb-4">
-              Why Choose FindYourMeet?
-            </h2>
-            <p className="text-lg text-neutral-600 dark:text-neutral-400 max-w-2xl mx-auto">
-              Discover the features that make booking meeting spaces effortless and efficient.
-            </p>
-          </motion.div>
-
-          <motion.ul
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="grid grid-cols-1 grid-rows-none gap-4 md:grid-cols-12 md:grid-rows-3 lg:gap-4 xl:max-h-[34rem] xl:grid-rows-2"
-          >
-            <AnimatedGridItem
-              area="md:[grid-area:1/1/2/7] xl:[grid-area:1/1/2/5]"
-              icon={<Calendar className="h-4 w-4 text-black dark:text-neutral-400" />}
-              title="Easy Booking System"
-              description="Book meeting rooms in seconds with our intuitive calendar interface. Real-time availability and instant confirmation."
-              delay={0.1}
-            />
-
-            <AnimatedGridItem
-              area="md:[grid-area:1/7/2/13] xl:[grid-area:2/1/3/5]"
-              icon={<MapPin className="h-4 w-4 text-black dark:text-neutral-400" />}
-              title="Global Locations"
-              description="Access meeting spaces in major cities worldwide. From New York to Tokyo, find the perfect space anywhere."
-              delay={0.2}
-            />
-
-            <AnimatedGridItem
-              area="md:[grid-area:2/1/3/7] xl:[grid-area:1/5/3/8]"
-              icon={<Users className="h-4 w-4 text-black dark:text-neutral-400" />}
-              title="Team Collaboration"
-              description="Built for teams of all sizes. Manage bookings, invite colleagues, and collaborate seamlessly."
-              delay={0.3}
-            />
-
-            <AnimatedGridItem
-              area="md:[grid-area:2/7/3/13] xl:[grid-area:1/8/2/13]"
-              icon={<Clock className="h-4 w-4 text-black dark:text-neutral-400" />}
-              title="24/7 Availability"
-              description="Book meeting rooms anytime, anywhere. Our platform works around the clock to serve your needs."
-              delay={0.4}
-            />
-
-            <AnimatedGridItem
-              area="md:[grid-area:3/1/4/13] xl:[grid-area:2/8/3/13]"
-              icon={<Shield className="h-4 w-4 text-black dark:text-neutral-400" />}
-              title="Secure & Reliable"
-              description="Enterprise-grade security and 99.9% uptime guarantee. Your bookings are safe with us."
-              delay={0.5}
-            />
-          </motion.ul>
-        </div>
-      </motion.div>
-
       <section id="faq" className="w-full py-20 md:py-32">
         <div className="container px-4 md:px-6">
           <motion.div
@@ -685,49 +688,51 @@ export default function Home() {
         </div>
       </section>
 
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8 }}
-        className="py-24 px-6 sm:px-16 lg:px-24 bg-neutral-50 dark:bg-neutral-900"
-      >
+      <section id="contact">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 40 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="mx-auto max-w-4xl text-center"
+          transition={{ duration: 0.8 }}
+          className="py-24 px-6 sm:px-16 lg:px-24 bg-neutral-50 dark:bg-neutral-900"
         >
-          <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
-            Have questions or suggestions? Get in touch with us!
-          </h2>
-          <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-12 max-w-2xl mx-auto">
-            If you have any feedback or comments regarding this website, please feel free to contact us.
-          </p>
-
-          <motion.form
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto"
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="mx-auto max-w-4xl text-center"
           >
-            <input
-              type="email"
-              placeholder="john@gmail.com"
-              className="flex-1 px-6 py-4 text-base bg-white dark:bg-neutral-950 border-2 border-neutral-200 dark:border-neutral-800 rounded-lg text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 transition-colors duration-200"
-              required
-            />
-            <button
-              type="submit"
-              className="px-8 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 focus:ring-offset-2 focus:ring-offset-neutral-50 dark:focus:ring-offset-neutral-900 transition-all duration-200 hover:shadow-lg"
+            <h2 className="text-3xl md:text-5xl font-bold text-neutral-900 dark:text-neutral-100 mb-6">
+              Have questions or suggestions? Get in touch with us!
+            </h2>
+            <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-400 mb-12 max-w-2xl mx-auto">
+              If you have any feedback or comments regarding this website, please feel free to contact us.
+            </p>
+
+            <motion.form
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="flex flex-col sm:flex-row gap-4 max-w-lg mx-auto"
             >
-              Submit
-            </button>
-          </motion.form>
+              <input
+                type="email"
+                placeholder="john@gmail.com"
+                className="flex-1 px-6 py-4 text-base bg-white dark:bg-neutral-950 border-2 border-neutral-200 dark:border-neutral-800 rounded-lg text-neutral-900 dark:text-neutral-100 placeholder-neutral-500 dark:placeholder-neutral-400 focus:outline-none focus:border-neutral-900 dark:focus:border-neutral-100 transition-colors duration-200"
+                required
+              />
+              <button
+                type="submit"
+                className="px-8 py-4 bg-neutral-900 dark:bg-white text-white dark:text-neutral-900 font-semibold rounded-lg hover:bg-neutral-800 dark:hover:bg-neutral-100 focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-neutral-100 focus:ring-offset-2 focus:ring-offset-neutral-50 dark:focus:ring-offset-neutral-900 transition-all duration-200 hover:shadow-lg"
+              >
+                Submit
+              </button>
+            </motion.form>
+          </motion.div>
         </motion.div>
-      </motion.div>
+      </section>
 
       <motion.footer
         initial={{ opacity: 0, y: 40 }}
